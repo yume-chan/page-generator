@@ -7,9 +7,6 @@
     "args": [
         "run",
         "tsc",
-        "-w",
-        "-p",
-        "."
     ],
     "showOutput": "silent",
     "isBackground": true,
