@@ -91,10 +91,11 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                     list.push(
                         <Separator orientation={orientation}
+                            start={true}
                             value={this.startPanelSize}
                             min={this.props.startPanelMinSize}
                             max={this.props.startPanelMaxSize}
-                            style={{ left: this.startPanelSize + "px" }}
+                            width={this.separatorWidth}
                             onValueUpdated={this.onStartPanelSizeChanged} />);
                 } else {
                     mainElementStyle.left = "0";
@@ -115,11 +116,11 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                     list.push(
                         <Separator orientation={orientation}
-                            decrement={true}
+                            start={false}
                             value={this.endPanelSize}
                             min={this.props.endPanelMinSize}
                             max={this.props.endPanelMaxSize}
-                            style={{ right: this.endPanelSize + "px" }}
+                            width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
 
                     list.push(endPanel);
@@ -146,10 +147,11 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                     list.push(
                         <Separator orientation={orientation}
+                            start={true}
                             value={this.startPanelSize}
                             min={this.props.startPanelMinSize}
                             max={this.props.startPanelMaxSize}
-                            style={{ top: this.startPanelSize + "px" }}
+                            width={this.separatorWidth}
                             onValueUpdated={this.onStartPanelSizeChanged} />);
                 } else {
                     mainElementStyle.top = "0";
@@ -170,11 +172,11 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                     list.push(
                         <Separator orientation={orientation}
-                            decrement={true}
+                            start={false}
                             value={this.endPanelSize}
                             min={this.props.endPanelMinSize}
                             max={this.props.endPanelMaxSize}
-                            style={{ bottom: this.endPanelSize + "px" }}
+                            width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
 
                     list.push(endPanel);

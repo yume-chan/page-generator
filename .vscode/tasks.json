@@ -6,9 +6,6 @@
     "isShellCommand": true,
     "args": [
         "run",
-        "tsc",
+        "webpack"
     ],
-    "showOutput": "silent",
-    "isBackground": true,
-    "problemMatcher": "$tsc-watch"
 }

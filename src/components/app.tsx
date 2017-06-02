@@ -39,8 +39,6 @@ export class App extends React.Component<{}, void> {
 
     templates: Template[];
 
-    @observable selectedTemplate: Template;
-
     constructor() {
         super();
 
@@ -48,7 +46,7 @@ export class App extends React.Component<{}, void> {
             {
                 name: "webpc",
                 uriPrefix: "https://pc.cnaidai.com/webpc/activity/",
-                uriSuffix: "index.htm",
+                uriSuffix: "/index.htm",
                 template: "",
                 replace: {
                     "Title": {
@@ -68,7 +66,7 @@ export class App extends React.Component<{}, void> {
             {
                 name: "webchat",
                 uriPrefix: "https://wechat.cnaidai.com/webchat/activity/",
-                uriSuffix: "index.html",
+                uriSuffix: "/index.html",
                 template: "",
                 replace: {
                     "Title": {
@@ -78,7 +76,6 @@ export class App extends React.Component<{}, void> {
                 }
             }
         ];
-        this.selectedTemplate = this.templates[0];
 
         getSubmenu(Menu.getApplicationMenu().items[0]).items[2].enabled = false;
 
@@ -113,7 +110,11 @@ export class App extends React.Component<{}, void> {
     }
 
     onCreate = (name: string, template: Template) => {
-this.file=new SourceFile()
+        this.file = new SourceFile(name, template);
+    }
+
+    onCancel = () => {
+
     }
 
     onTemplateReplaceChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -125,10 +126,18 @@ this.file=new SourceFile()
     };
 
     render() {
+        if (this.file === undefined) {
+            return (
+                <div id="app">
+                    <NewFile templates={this.templates} onCreate={this.onCreate} onCancel={this.onCancel} />
+                </div>
+            );
+        }
+
         const startPanel = (
             <aside className="panel-left" >
                 <h1>Properties</h1>
-                {iterate(this.selectedTemplate.replace, (key, value) => (
+                {iterate(this.file.template.replace, (key, value) => (
                     <div key={key}>
                         <h4>{key}</h4>
                         <textarea data-key={key} onChange={this.onTemplateReplaceChange} value={value.default}></textarea>
@@ -145,22 +154,15 @@ this.file=new SourceFile()
 
         return (
             <div id="app">
-                {/*<main >
+                <main >
                     <header>
-                        <select onChange={this.onTemplateChange}>
-                            {this.templates.map(value => (
-                                <option key={value.name} checked={value == this.selectedTemplate}>{value.name}</option>
-                            ))}
-                        </select>
                         <div className="url-bar">
-                            <span>{this.selectedTemplate.uriPrefix}</span>
-                            <input id="input-filename" type="text" />
-                            <span>{this.selectedTemplate.uriSuffix}</span>
+                            <span>{this.file.template.uriPrefix + this.file.name + this.file.template.uriSuffix}</span>
+                            <span>{this.file.template.uriPrefix + this.file.name + this.file.template.uriSuffix}</span>
                         </div>
                     </header>
-                    <DockPanel id="content" orientation="horizontal" mainElement={mainElement as any} startPanel={startPanel} startPanelSize={200} startPanelMinSize={200} />
-                </main>*/}
-                <NewFile templates={this.templates} onCreate={this.onCreate} />
+                    <DockPanel id="content" orientation="horizontal" mainElement={mainElement} startPanel={startPanel} startPanelSize={200} startPanelMinSize={200} />
+                </main>
                 {/*<Separator orientation="horizontal"
                     decrement={true}
                     value={this.rightPanelWidth}

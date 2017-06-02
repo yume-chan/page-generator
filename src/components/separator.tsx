@@ -5,11 +5,11 @@ import { observer } from "mobx-react";
 
 export interface SeparatorProps {
     orientation: "vertical" | "horizontal";
-    decrement?: boolean;
+    start: boolean;
     value: number;
     min?: number;
     max?: number;
-    style: { left?: string; top?: string; right?: string; bottom?: string };
+    width: number;
     onValueUpdated: (value: number) => void;
 }
 
@@ -33,7 +33,7 @@ export class Separator extends React.Component<SeparatorProps, void> {
 
     onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const now = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
-        const delta = this.props.decrement ? this.start - now : now - this.start;
+        const delta = this.props.start ? now - this.start : this.start - now;
         const current = this.origin + delta;
         if (this.props.min !== undefined && current < this.props.min)
             return;
@@ -48,12 +48,51 @@ export class Separator extends React.Component<SeparatorProps, void> {
     }
 
     render() {
-        if (this.dragging)
-            return <div className="drag-overlay"
-                style={{ cursor: this.props.orientation == "horizontal" ? "ew-resize" : "ns-resize" }}
-                onMouseMove={this.onMouseMove}
-                onMouseUp={this.onMouseUp} />;
-        else
-            return <div className="separator" style={this.props.style} onMouseDown={this.onMouseDown} />;
+        const style = {} as any;
+        style.position = "absolute";
+
+        switch (this.props.orientation) {
+            case "horizontal":
+                style.cursor = "ew-resize";
+                break;
+            case "vertical":
+                style.cursor = "ns-resize";
+                break;
+        }
+
+        if (this.dragging) {
+            return (
+                <div className="drag-overlay"
+                    style={style}
+                    onMouseMove={this.onMouseMove}
+                    onMouseUp={this.onMouseUp} />
+            );
+        }
+        else {
+            switch (this.props.orientation) {
+                case "horizontal":
+                    style.top = "0";
+                    style.bottom = "0";
+
+                    style.width = this.props.width + "px";
+                    if (this.props.start)
+                        style.left = this.props.value + "px";
+                    else
+                        style.right = this.props.value + "px";
+                    break;
+                case "vertical":
+                    style.right = "0";
+                    style.left = "0";
+
+                    style.height = this.props.width + "px";
+                    if (this.props.start)
+                        style.top = this.props.width + "px";
+                    else
+                        style.bottom = this.props.width + "px";
+                    break;
+            }
+
+            return <div className="separator" style={style} onMouseDown={this.onMouseDown} />;
+        }
     }
 }

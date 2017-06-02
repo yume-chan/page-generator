@@ -11,6 +11,8 @@ export interface Template {
 export class SourceFile {
     @observable dirty: boolean;
     path: string | undefined;
-    template: Template;
+
     templateReplace: { [key: string]: string };
+
+    constructor(public name: string, public template: Template) { }
 }
