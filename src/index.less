@@ -1,0 +1,201 @@
+// out: ../out/, sourceMap: true, ieCompact: false
+
+html, body, #app-container, #app {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+* {
+    font-family: -apple-system,BlinkMacSystemFont,Segoe WPC,Segoe UI,HelveticaNeue-Light,Ubuntu,Droid Sans,sans-serif;
+    font-weight: normal;
+    font-size: 12px;
+    color: #cccccc;
+}
+
+#app {
+    position: relative;
+
+    background-color: #1e1e1e;
+}
+
+main {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+header {
+    display: flex;
+    @height: 32px;
+    height: @height;
+    line-height: @height;
+
+    padding: 0 8px;
+
+    label {
+        display: block;
+        padding: 0 8px;
+
+        font-family: Segoe UI;
+        font-size: 11px;
+        color: rgb(187, 187, 187);
+        text-transform: uppercase;
+    }
+
+}
+
+input {
+    box-sizing: border-box;
+    
+    display: block;
+
+    height: 24px;
+    line-height: 16px;
+
+    padding: 4px;
+
+    border: none;
+
+    background-color: rgb(60, 60, 60);
+    color: rgb(204, 204, 204);
+
+    &:focus {
+        outline-color: rgba(14, 99, 156, 0.6);
+        outline-offset: 0;
+    }
+}
+
+.separator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    width: 6px;
+
+    cursor: ew-resize;
+}
+
+.drag-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: 10;
+}
+
+aside {
+    box-sizing: border-box;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    padding: 0 16px;
+
+    background-color: rgb(37, 37, 38);
+
+    &.panel-right {
+        right: 0;
+    }
+
+    &.panel-left {
+        left: 0;
+    }
+
+    h1 {
+        display: block;
+
+        @height: 36px;
+        height: @height;
+        line-height: @height;
+
+        margin: 0;
+        
+        font-family: Segoe UI;
+        font-size: 11px;
+        color: rgb(187, 187, 187);
+        text-transform: uppercase;
+
+        user-select: none;
+        cursor: default;
+    }
+}
+
+select {
+    height: 20px;
+    margin-top: (32 - 20) / 2px;
+
+    background-color: rgb(60, 60, 60);
+    color: rgb(240, 240, 240);
+    border-color: rgb(60, 60, 60);
+
+    &:focus {
+        outline-color: rgba(14, 99, 156, 0.6);
+        outline-offset: 0;
+    }
+}
+
+.url-bar {
+    display: flex;
+    flex-grow: 1;
+
+    padding: 0 8px;
+}
+
+#content {
+    position: absolute;
+    top: 32px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+h4 {
+    display: block;
+    height: 18px;
+    line-height: 18px;
+
+    color: #cccccc;
+
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+
+    padding: 4px 0 0;
+    margin: 0;
+
+    font-family: Segoe UI;
+    font-size: 11px;
+    font-weight: 400;
+
+    text-transform: lowercase;
+}
+
+textarea {
+    box-sizing: border-box;
+    
+    display: block;
+    width: 100%;
+
+    height: 24px;
+    max-height: 120px;
+
+    border: none;
+
+    background-color: rgb(60, 60, 60);
+    color: rgb(204, 204, 204);
+
+    resize: vertical;
+
+    &:focus {
+        outline-color: rgba(14, 99, 156, 0.6);
+        outline-offset: 0;
+    }
+}
+
+@import 'components/new-file';
