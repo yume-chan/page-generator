@@ -1,5 +1,3 @@
-/// <reference path="./electron-window-state.d.ts" />
-
 import * as electron from "electron";
 import { app, BrowserWindow, Menu, MenuItem } from "electron";
 import * as windowStateKeeper from "electron-window-state";
@@ -39,14 +37,16 @@ const menu: Electron.MenuItemConstructorOptions[] = [
 let win: Electron.BrowserWindow | null;
 
 function createWindow() {
+    BrowserWindow.addDevToolsExtension("./react-dev-tools/");
+
     const mainWindowState = new windowStateKeeper();
 
     // Create the browser window.
     win = new BrowserWindow({
-        'x': mainWindowState.x,
-        'y': mainWindowState.y,
-        'width': mainWindowState.width,
-        'height': mainWindowState.height
+        x: mainWindowState.x,
+        y: mainWindowState.y,
+        width: mainWindowState.width,
+        height: mainWindowState.height
     });
 
     // and load the index.html of the app.
