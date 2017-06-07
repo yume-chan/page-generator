@@ -1,9 +1,101 @@
 import * as React from "react";
 
-import { observable, computed } from "mobx"
+import { observable, computed } from "mobx";
 import { observer } from "mobx-react";
 
-import { Separator } from "./separator";
+export interface SeparatorProps {
+    orientation: "vertical" | "horizontal";
+    start: boolean;
+    value: number;
+    min?: number;
+    max?: number;
+    width: number;
+    onValueUpdated: (value: number) => void;
+}
+
+@observer
+export class Separator extends React.Component<SeparatorProps, void> {
+    cursor: string = "";
+    start: number = 0;
+    origin: number = 0;
+
+    @observable dragging: boolean = false;
+
+    onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.button == 0) {
+            e.preventDefault();
+
+            this.start = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
+            this.origin = this.props.value;
+            this.dragging = true;
+        }
+    }
+
+    onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const now = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
+        const delta = this.props.start ? now - this.start : this.start - now;
+        const current = this.origin + delta;
+        if (this.props.min !== undefined && current < this.props.min)
+            return;
+        if (this.props.max != undefined && current > this.props.max)
+            return;
+        this.props.onValueUpdated(current);
+    }
+
+    onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.button == 0)
+            this.dragging = false;
+    }
+
+    render() {
+        const style = {} as any;
+        style.position = "absolute";
+
+        switch (this.props.orientation) {
+            case "horizontal":
+                style.cursor = "ew-resize";
+                break;
+            case "vertical":
+                style.cursor = "ns-resize";
+                break;
+        }
+
+        if (this.dragging) {
+            return (
+                <div className="drag-overlay"
+                    style={style}
+                    onMouseMove={this.onMouseMove}
+                    onMouseUp={this.onMouseUp} />
+            );
+        }
+        else {
+            switch (this.props.orientation) {
+                case "horizontal":
+                    style.top = "0";
+                    style.bottom = "0";
+
+                    style.width = this.props.width + "px";
+                    if (this.props.start)
+                        style.left = this.props.value + "px";
+                    else
+                        style.right = this.props.value + "px";
+                    break;
+                case "vertical":
+                    style.right = "0";
+                    style.left = "0";
+
+                    style.height = this.props.width + "px";
+                    if (this.props.start)
+                        style.top = this.props.width + "px";
+                    else
+                        style.bottom = this.props.width + "px";
+                    break;
+            }
+
+            return <div className="separator" style={style} onMouseDown={this.onMouseDown} />;
+        }
+    }
+}
 
 export interface DeckPanelMainElementProps {
     top?: number;
@@ -67,7 +159,7 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
         let { orientation, startPanel, mainElement, endPanel } = this.props;
 
         const mainElementStyle = {} as any;
-        mainElement = React.cloneElement(mainElement, { style: mainElementStyle });
+        mainElement = React.cloneElement(mainElement, { style: mainElementStyle, key: "2" });
 
         mainElementStyle.position = "absolute";
 
@@ -78,8 +170,9 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                 if (startPanel !== undefined) {
                     const startPanelStyle = {} as any;
-                    startPanel = React.cloneElement(startPanel, { style: startPanelStyle });
+                    startPanel = React.cloneElement(startPanel, { style: startPanelStyle, key: "0" });
 
+                    startPanelStyle.position = "absolute";
                     startPanelStyle.top = "0";
                     startPanelStyle.bottom = "0";
                     startPanelStyle.left = "0";
@@ -90,7 +183,8 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                     list.push(startPanel);
 
                     list.push(
-                        <Separator orientation={orientation}
+                        <Separator key="1"
+                            orientation={orientation}
                             start={true}
                             value={this.startPanelSize}
                             min={this.props.startPanelMinSize}
@@ -104,24 +198,26 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 list.push(mainElement);
 
                 if (endPanel !== undefined && this.endPanelSize !== undefined) {
-                    const endPanelStyle = {} as any;
-                    endPanel = React.cloneElement(endPanel, { style: endPanelStyle });
-
-                    endPanelStyle.top = "0";
-                    endPanelStyle.right = "0";
-                    endPanelStyle.bottom = "0";
-                    endPanelStyle.width = this.endPanelSize + "px";
-
-                    mainElementStyle.right = this.endPanelSize + this.separatorWidth + "px";
-
                     list.push(
-                        <Separator orientation={orientation}
+                        <Separator key="3"
+                            orientation={orientation}
                             start={false}
                             value={this.endPanelSize}
                             min={this.props.endPanelMinSize}
                             max={this.props.endPanelMaxSize}
                             width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
+
+                    const endPanelStyle = {} as any;
+                    endPanel = React.cloneElement(endPanel, { style: endPanelStyle, key: "4" });
+
+                    endPanelStyle.position = "absolute";
+                    endPanelStyle.top = "0";
+                    endPanelStyle.right = "0";
+                    endPanelStyle.bottom = "0";
+                    endPanelStyle.width = this.endPanelSize + "px";
+
+                    mainElementStyle.right = this.endPanelSize + this.separatorWidth + "px";
 
                     list.push(endPanel);
                 } else {
@@ -134,8 +230,9 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
                 if (startPanel !== undefined && this.startPanelSize !== undefined) {
                     const startPanelStyle = {} as any;
-                    startPanel = React.cloneElement(startPanel, { style: startPanelStyle });
+                    startPanel = React.cloneElement(startPanel, { style: startPanelStyle, key: "0" });
 
+                    startPanelStyle.position = "absolute";
                     startPanelStyle.top = "0";
                     startPanelStyle.right = "0";
                     startPanelStyle.left = "0";
@@ -146,7 +243,8 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                     list.push(startPanel);
 
                     list.push(
-                        <Separator orientation={orientation}
+                        <Separator key="1"
+                            orientation={orientation}
                             start={true}
                             value={this.startPanelSize}
                             min={this.props.startPanelMinSize}
@@ -160,24 +258,26 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 list.push(mainElement);
 
                 if (endPanel !== undefined && this.endPanelSize !== undefined) {
-                    const endPanelStyle = {} as any;
-                    endPanel = React.cloneElement(endPanel, { style: endPanelStyle });
-
-                    endPanelStyle.top = "0";
-                    endPanelStyle.right = "0";
-                    endPanelStyle.bottom = "0";
-                    endPanelStyle.width = this.endPanelSize + "px";
-
-                    mainElementStyle.bottom = this.endPanelSize + this.separatorWidth + "px";
-
                     list.push(
-                        <Separator orientation={orientation}
+                        <Separator key="3"
+                            orientation={orientation}
                             start={false}
                             value={this.endPanelSize}
                             min={this.props.endPanelMinSize}
                             max={this.props.endPanelMaxSize}
                             width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
+
+                    const endPanelStyle = {} as any;
+                    endPanel = React.cloneElement(endPanel, { style: endPanelStyle, key: "4" });
+
+                    endPanelStyle.position = "absolute";
+                    endPanelStyle.top = "0";
+                    endPanelStyle.right = "0";
+                    endPanelStyle.bottom = "0";
+                    endPanelStyle.width = this.endPanelSize + "px";
+
+                    mainElementStyle.bottom = this.endPanelSize + this.separatorWidth + "px";
 
                     list.push(endPanel);
                 } else {

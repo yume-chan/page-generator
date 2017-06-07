@@ -1,3 +1,6 @@
+const path = require('path');
+const webpack = require('webpack');
+
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const extractLess = new ExtractTextPlugin({
@@ -5,11 +8,17 @@ const extractLess = new ExtractTextPlugin({
 });
 
 module.exports = {
-    entry: "./src/index.tsx",
+    entry: {
+        app: [
+            "react-hot-loader/patch",
+            "./src/index.tsx"
+        ]
+    },
 
     output: {
         filename: "bundle.js",
-        path: __dirname + "/out"
+        path: __dirname + "/out",
+        publicPath: "/"
     },
 
     // Enable sourcemaps for debugging webpack's output.
@@ -49,6 +58,14 @@ module.exports = {
     target: "electron-renderer",
 
     plugins: [
-        extractLess
-    ]
+        extractLess,
+        new webpack.HotModuleReplacementPlugin()
+    ],
+
+    devServer: {
+        hot: true,
+        contentBase: __dirname + "/out",
+        publicPath: "/",
+        port: 3000
+    }
 };

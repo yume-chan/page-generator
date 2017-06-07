@@ -4,11 +4,11 @@ import * as path from "path";
 import { observable, computed } from "mobx";
 
 export interface Template {
-    name: string;
-    uri: string;
-    uriReplace: string;
-    html: string;
-    htmlReplace: { [key: string]: { replace: string; default: string } };
+    readonly name: string;
+    readonly uri: string;
+    readonly uriReplace: string;
+    readonly html: string;
+    readonly htmlReplace: { readonly [key: string]: { replace: string; default: string } };
 }
 
 export namespace fsAsync {
@@ -73,11 +73,12 @@ export namespace Template {
                 const data = await fsAsync.readFile(fullPath, "utf-8");
 
                 const template = JSON.parse(data) as Template;
-                template.name = parsed.name;
+                // Temporarily breaks readonly contract
+                (template as any).name = parsed.name;
 
                 const htmlPath = path.resolve(folder, template.html);
                 const html = await fsAsync.readFile(htmlPath, "utf-8");
-                template.html = html;
+                (template as any).html = html;
 
                 result.push(template);
             }
@@ -91,22 +92,32 @@ export interface ProjectFile {
     name: string;
     template: string;
     templateReplace: { [key: string]: string };
-
+    background: string[];
 }
 
 export class Project {
+    readonly name: string;
+    readonly template: Template;
+
     @observable dirty: boolean;
     path: string | undefined;
 
-    templateReplace: { [key: string]: string };
+    @observable background: string[] = [];
+    @observable templateReplace: Map<string, string> = new Map<string, string>();
 
-    constructor(public name: string, public template: Template, templateReplace: { [key: string]: string } | undefined = undefined) {
-        if (templateReplace !== undefined) {
-            this.templateReplace = templateReplace;
+    constructor(name: string, template: Template, path: string | undefined = undefined, file: ProjectFile | undefined = undefined) {
+        this.name = name;
+        this.template = template;
+
+        if (file !== undefined) {
+            for (const key of Object.keys(file.templateReplace))
+                this.templateReplace.set(key, file.templateReplace[key]);
+
+            for (const item of file.background)
+                this.background.push(item);
         } else {
-            this.templateReplace = {};
             for (const key of Object.keys(template.htmlReplace))
-                this.templateReplace[key] = template.htmlReplace[key].default;
+                this.templateReplace.set(key, template.htmlReplace[key].default);
         }
     }
 }

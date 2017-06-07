@@ -49,18 +49,21 @@ function createWindow() {
         height: mainWindowState.height
     });
 
-    // and load the index.html of the app.
-    win.loadURL(url.format({
-        pathname: path.join(__dirname, "index.html"),
-        protocol: "file:",
-        slashes: true,
-    }));
+    if (process.env.NODE_ENV == "production") {
+        win.loadURL(url.format({
+            pathname: path.join(__dirname, "index.html"),
+            protocol: "file:",
+            slashes: true,
+        }));
+    } else {
+        win.loadURL("http://localhost:3000/");
+    }
 
     // Let us register listeners on the window, so we can update the state
     // automatically (the listeners will be removed when the window is closed)
     // and restore the maximized or full screen state
     mainWindowState.manage(win);
-    
+
     // Open the DevTools.
     win.webContents.openDevTools();
 

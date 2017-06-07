@@ -67,6 +67,100 @@
   line-height: 16px;
   padding: 4px;
 }
+webview {
+  background-color: white;
+}
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+.wrapper textarea {
+  background-color: #3c3c3c;
+  color: #cccccc;
+  min-height: 26px;
+  display: block;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  border: none;
+  resize: none;
+  padding: 4px;
+}
+.wrapper textarea:focus {
+  outline-color: rgba(14, 99, 156, 0.6);
+  outline-offset: 0;
+}
+.wrapper .mirror {
+  max-height: 134px;
+  position: absolute;
+  display: inline-block;
+  width: 100%;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  visibility: hidden;
+  min-height: 26px;
+  word-wrap: break-word;
+  padding: 4px;
+}
+.header {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23E8E8E8%22%20d%3D%22M11%2010H5.344L11%204.414V10z%22%2F%3E%3C%2Fsvg%3E");
+  background-position: 2px;
+  background-size: 16px;
+  background-repeat: no-repeat;
+  height: 22px;
+  background-color: rgba(128, 128, 128, 0.2);
+  position: relative;
+  line-height: 22px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding-left: 20px;
+  overflow: hidden;
+  display: flex;
+  color: #cccccc;
+  cursor: pointer;
+}
+.header.collapsed {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23E8E8E8%22%20d%3D%22M6%204v8l4-4-4-4zm1%202.414L8.586%208%207%209.586V6.414z%22%2F%3E%3C%2Fsvg%3E");
+}
+.header .title {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header .actions {
+  display: flex;
+}
+.header .actions .action {
+  width: 28px;
+  background-size: 16px;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  height: 22px;
+}
+aside {
+  box-sizing: border-box;
+  background-color: #252526;
+}
+aside h1 {
+  display: block;
+  height: 36px;
+  line-height: 36px;
+  margin: 0 8px;
+  font-family: Segoe UI;
+  font-size: 11px;
+  font-weight: normal;
+  color: #bbbbbb;
+  text-transform: uppercase;
+  user-select: none;
+  cursor: default;
+}
+.icon-new {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2019.2.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2016%2016%22%20style%3D%22enable-background%3Anew%200%200%2016%2016%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23C5C5C5%3B%7D%0A%3C%2Fstyle%3E%0A%3Crect%20x%3D%227%22%20y%3D%223%22%20class%3D%22st0%22%20width%3D%223%22%20height%3D%2211%22%2F%3E%0A%3Crect%20x%3D%223%22%20y%3D%227%22%20class%3D%22st0%22%20width%3D%2211%22%20height%3D%223%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
 html,
 body,
 #app-container {
@@ -78,7 +172,9 @@ body,
   position: relative;
   background-color: #1e1e1e;
 }
-* {
+body,
+input,
+textarea {
   font-family: -apple-system, BlinkMacSystemFont, Segoe WPC, Segoe UI, HelveticaNeue-Light, Ubuntu, Droid Sans, sans-serif;
   font-weight: normal;
   font-size: 12px;
@@ -127,32 +223,6 @@ input:focus {
   left: 0;
   z-index: 10;
 }
-aside {
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  padding: 0 16px;
-  background-color: #252526;
-}
-aside.panel-right {
-  right: 0;
-}
-aside.panel-left {
-  left: 0;
-}
-aside h1 {
-  display: block;
-  height: 36px;
-  line-height: 36px;
-  margin: 0;
-  font-family: Segoe UI;
-  font-size: 11px;
-  color: #bbbbbb;
-  text-transform: uppercase;
-  user-select: none;
-  cursor: default;
-}
 select {
   height: 20px;
   margin-top: 6px;
@@ -190,21 +260,6 @@ h4 {
   font-size: 11px;
   font-weight: 400;
   text-transform: lowercase;
-}
-textarea {
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  height: 24px;
-  max-height: 120px;
-  border: none;
-  background-color: #3c3c3c;
-  color: #cccccc;
-  resize: vertical;
-}
-textarea:focus {
-  outline-color: rgba(14, 99, 156, 0.6);
-  outline-offset: 0;
 }
 
 /*# sourceMappingURL=bundle.css.map*/

@@ -35,6 +35,8 @@ export class Welcome extends React.Component<WelcomeProps, void>{
     private async loadTemplatesAsync() {
         this.templates = await Template.loadAsync("./templates/");
         this._state = WelcomeState.Welcome;
+
+        this.props.onOpen(new Project("test", this.templates[0]));
     }
 
     private onOpen = () => {
@@ -50,7 +52,7 @@ export class Welcome extends React.Component<WelcomeProps, void>{
 
                 const template = this.templates.find(x => x.name == file.template);
                 if (template !== undefined) {
-                    this.props.onOpen(new Project(file.name, template, file.templateReplace));
+                    this.props.onOpen(new Project(file.name, template, files[0], file));
                 }
             }
         });

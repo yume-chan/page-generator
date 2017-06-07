@@ -1,5 +1,5 @@
-import * as electron from 'electron';
-import { remote } from 'electron';
+import * as electron from "electron";
+import { remote } from "electron";
 const { dialog, Menu, MenuItem } = remote;
 
 import * as React from "react";
@@ -11,6 +11,12 @@ import { Project, Template } from "./source-file";
 import { DockPanel } from "./dock-panel";
 import { NewFile } from "./new-file";
 import { Welcome } from "./welcome";
+import { Editor } from "./editor";
+import { TextArea } from "./text-area";
+import { Expendable } from "./expendable";
+import { Panel, PanelAction } from "./panel";
+
+import "./app.less";
 
 interface MenuHandler {
     file: {
@@ -81,36 +87,80 @@ export class App extends React.Component<{}, void> {
 
     }
 
-    onTemplateReplaceChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onTemplateReplaceChange = (key: string, value: string) => {
         if (this.project !== undefined) {
-            const target = e.target;
-            this.project.templateReplace[target.dataset["key"] as string] = target.value;
+            this.project.templateReplace.set(key, value);
             this.project.dirty = true;
         }
     };
+
+    renderReplaces(project: Project) {
+        const children: JSX.Element[] = [];
+        for (const [key, value] of project.templateReplace)
+            children.push(
+                <div key={key}>
+                    <h4>{key}</h4>
+                    <TextArea data-key={key} onChange={(value) => this.onTemplateReplaceChange(key, value)} value={value} />
+                </div>
+            );
+        return children;
+    }
+
+    renderBackgrounds(project: Project) {
+        return project.background.map((item, index) => {
+            return (
+                <div key={index} className="list-item">
+                    <div className="content" title={item}>{item}</div>
+                    <div className="actions">
+                        <div className="action icon-kill" onClick={e => project.background.splice(index, 1)}></div>
+                    </div>
+                </div>
+            );
+        });
+    }
 
     render() {
         if (this.project === undefined) {
             return <Welcome onOpen={project => this.project = project} />;
         }
 
+        const actions: PanelAction[] = [
+            {
+                className: "icon-new",
+                onClick: () => {
+                    dialog.showOpenDialog(remote.getCurrentWindow(), {
+                        filters: [
+                            {
+                                name: "Image",
+                                extensions: ["png", "jpg"]
+                            }
+                        ]
+                    }, files => {
+                        if (files === undefined)
+                            return;
+
+                        if (this.project === undefined)
+                            return;
+
+                        this.project.background.push(files[0]);
+                    });
+                }
+            }
+        ];
+
         const startPanel = (
-            <aside className="panel-left" >
-                <h1>Properties</h1>
-                {iterate(this.project.template.htmlReplace, (key, value) => (
-                    <div key={key}>
-                        <h4>{key}</h4>
-                        <textarea data-key={key} onChange={this.onTemplateReplaceChange} value={value.default}></textarea>
-                    </div>
-                ))}
-            </aside>
+            <Panel title="Properties">
+                <Expendable title="Template" defaultExpended={true} padding="8px">
+                    {this.renderReplaces(this.project)}
+                </Expendable>
+
+                <Expendable title="Background" defaultExpended={true} padding="8px" actions={actions}>
+                    {this.renderBackgrounds(this.project)}
+                </Expendable>
+            </Panel>
         );
 
-        const mainElement = (
-            <div className="editor" >
-
-            </div>
-        );
+        const mainElement = <Editor project={this.project} />;
 
         return (
             <div id="app">
@@ -122,15 +172,6 @@ export class App extends React.Component<{}, void> {
                     </header>
                     <DockPanel id="content" orientation="horizontal" mainElement={mainElement} startPanel={startPanel} startPanelSize={200} startPanelMinSize={200} />
                 </main>
-                {/*<Separator orientation="horizontal"
-                    decrement={true}
-                    value={this.rightPanelWidth}
-                    min={200}
-                    style={this.mainStyle}
-                    onValueUpdated={this.onRightPanelWidthChanged} />
-                <aside className="panel-right" style={this.rightPanelStyle}>
-                    <h1>Assets</h1>
-                </aside>*/}
             </div >
         );
     }

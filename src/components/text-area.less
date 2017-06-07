@@ -1,0 +1,37 @@
+.wrapper {
+    position: relative;
+    width: 100%;
+
+    textarea {
+        background-color: rgb(60, 60, 60);
+        color: rgb(204, 204, 204);
+        min-height: 26px;
+        display: block;
+        overflow: hidden;
+        box-sizing: border-box;
+        width: 100%;
+        border: none;
+        resize: none;
+        padding: 4px;
+
+        &:focus {
+            outline-color: rgba(14, 99, 156, 0.6);
+            outline-offset: 0;
+        }
+    }
+    
+    .mirror {
+        max-height: 134px;
+        position: absolute;
+        display: inline-block;
+        width: 100%;
+        top: 0;
+        left: 0;
+        box-sizing: border-box;
+        white-space: pre-wrap;
+        visibility: hidden;
+        min-height: 26px;
+        word-wrap: break-word;
+        padding: 4px;
+    }
+}
