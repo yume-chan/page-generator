@@ -1,8 +1,13 @@
 import * as React from "react";
 
+import { observable, computed } from "mobx";
+import { observer } from "mobx-react";
+
+import bind from "bind-decorator";
+
 import { Dialog } from "./dialog";
 
-import { Template } from "./source-file";
+import { Template } from "./project";
 import "./new-file.less";
 
 interface NewFileProps {
@@ -11,9 +16,12 @@ interface NewFileProps {
     onCancel(): void;
 }
 
+@observer
 export class NewFile extends React.Component<NewFileProps, void>{
-    name: string;
-    template: Template;
+    private name: string;
+    
+    @observable.ref
+    private template: Template;
 
     constructor(props: NewFileProps) {
         super(props);
@@ -21,15 +29,18 @@ export class NewFile extends React.Component<NewFileProps, void>{
         this.template = props.templates[0];
     }
 
-    private onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    @bind
+    private onNameChange(e: React.ChangeEvent<HTMLInputElement>) {
         this.name = e.target.value;
     }
 
-    private onTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    @bind
+    private onTemplateChange(e: React.ChangeEvent<HTMLSelectElement>) {
         this.template = this.props.templates[e.target.selectedIndex];
     }
 
-    private onResult = (id: string) => {
+    @bind
+    private onResult(id: string) {
         switch (id) {
             case "ok":
                 if (this.name != undefined)

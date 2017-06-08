@@ -1,10 +1,14 @@
+import * as path from "path";
+
 import * as electron from "electron";
 import * as React from "react";
 
-import { observable, computed } from "mobx";
+import { observable, computed, autorun } from "mobx";
 import { observer } from "mobx-react";
 
-import { Project } from "./source-file";
+import bind from "bind-decorator";
+
+import { Project } from "./project";
 import "./editor.less";
 
 declare global {
@@ -22,27 +26,35 @@ export interface EditorProps {
 
 @observer
 export class Editor extends React.Component<EditorProps, void> {
-    private webview: Electron.WebviewTag;
+    private webview: Electron.WebviewTag | undefined;
 
-    private onWebviewRef = (e: Electron.WebviewTag) => {
+    @observable
+    private content: string = "";
+
+    constructor(props: EditorProps) {
+        super(props);
+
+        autorun(() => this.computeContentAsync(props.project));
+    }
+
+    @bind
+    private onWebviewRef(e: Electron.WebviewTag) {
+        if (e === null) {
+            this.webview = undefined;
+            return;
+        }
+
         this.webview = e;
+        this.webview.httpreferrer = this.props.project.uri;
         this.webview.disablewebsecurity = "true";
         this.webview.addEventListener("dom-ready", () => {
-            this.webview.openDevTools();
+            if (this.webview !== undefined)
+                this.webview.openDevTools();
         });
     }
 
-    @computed private get content() {
-        let result = this.props.project.template.html;
-        for (const key of Object.keys(this.props.project.template.htmlReplace))
-            result = result.replace(this.props.project.template.htmlReplace[key].replace, this.props.project.templateReplace.get(key) as string);
-
-        const background: string[] = [];
-        for (const item of this.props.project.background)
-            background.push(`<img src="${item}">`);
-        result = result.replace("{{CONTENT}}", background.join("\r\n"));
-
-        return result;
+    private async computeContentAsync(project: Project) {
+        this.content = await project.buildAsync(true);
     };
 
     render() {

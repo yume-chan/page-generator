@@ -3,6 +3,8 @@ import * as React from "react";
 import { observable, computed } from "mobx";
 import { observer } from "mobx-react";
 
+import bind from "bind-decorator";
+
 export interface SeparatorProps {
     orientation: "vertical" | "horizontal";
     start: boolean;
@@ -15,13 +17,14 @@ export interface SeparatorProps {
 
 @observer
 export class Separator extends React.Component<SeparatorProps, void> {
-    cursor: string = "";
-    start: number = 0;
-    origin: number = 0;
+    private start: number = 0;
+    private origin: number = 0;
 
-    @observable dragging: boolean = false;
+    @observable
+    private dragging: boolean = false;
 
-    onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    @bind
+    private onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         if (e.button == 0) {
             e.preventDefault();
 
@@ -31,7 +34,8 @@ export class Separator extends React.Component<SeparatorProps, void> {
         }
     }
 
-    onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    @bind
+    private onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         const now = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
         const delta = this.props.start ? now - this.start : this.start - now;
         const current = this.origin + delta;
@@ -42,7 +46,8 @@ export class Separator extends React.Component<SeparatorProps, void> {
         this.props.onValueUpdated(current);
     }
 
-    onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    @bind
+    private onMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (e.button == 0)
             this.dragging = false;
     }
@@ -97,13 +102,6 @@ export class Separator extends React.Component<SeparatorProps, void> {
     }
 }
 
-export interface DeckPanelMainElementProps {
-    top?: number;
-    right?: number;
-    bottom?: number;
-    left?: number;
-}
-
 export interface DockPanelProps {
     id?: string;
 
@@ -145,11 +143,13 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
         this.separatorWidth = props.separatorWidth || 6;
     }
 
-    onStartPanelSizeChanged = (value: number) => {
+    @bind
+    onStartPanelSizeChanged(value: number) {
         this.startPanelSize = value;
     }
 
-    onEndPanelSizeChanged = (value: number) => {
+    @bind
+    onEndPanelSizeChanged(value: number) {
         this.endPanelSize = value;
     }
 

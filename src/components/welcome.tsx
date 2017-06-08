@@ -1,3 +1,5 @@
+import * as fs from "fs-extra";
+
 import * as electron from "electron";
 import { remote } from "electron";
 const { dialog, Menu, MenuItem } = remote;
@@ -5,11 +7,14 @@ const { dialog, Menu, MenuItem } = remote;
 import * as React from "react";
 
 import { observable, computed } from "mobx"
+import { ObservableArray } from "mobx/lib/types/observablearray";
 import { observer } from "mobx-react";
+
+import bind from "bind-decorator";
 
 import { Dialog } from "./dialog";
 import { NewFile } from "./new-file";
-import { Project, Template, fsAsync, ProjectFile } from "./source-file";
+import { Project, Template, ProjectFile } from "./project";
 
 enum WelcomeState {
     Initial,
@@ -23,8 +28,11 @@ export interface WelcomeProps {
 
 @observer
 export class Welcome extends React.Component<WelcomeProps, void>{
-    @observable private _state: WelcomeState = WelcomeState.Initial;
-    @observable private templates: Template[];
+    @observable
+    private _state: WelcomeState = WelcomeState.Initial;
+
+    @observable.shallow
+    private templates: Template[];
 
     constructor() {
         super();
@@ -35,19 +43,18 @@ export class Welcome extends React.Component<WelcomeProps, void>{
     private async loadTemplatesAsync() {
         this.templates = await Template.loadAsync("./templates/");
         this._state = WelcomeState.Welcome;
-
-        this.props.onOpen(new Project("test", this.templates[0]));
     }
 
-    private onOpen = () => {
+    @bind
+    private onOpen() {
         dialog.showOpenDialog(remote.getCurrentWindow(), {
             filters: [{
                 name: "Project File",
-                extensions: ["wpp"]
+                extensions: ["json"]
             }]
         }, async files => {
             if (files !== undefined) {
-                const content = await fsAsync.readFile(files[0], "utf-8");
+                const content = await fs.readFile(files[0], "utf-8");
                 const file = JSON.parse(content) as ProjectFile;
 
                 const template = this.templates.find(x => x.name == file.template);
@@ -58,7 +65,8 @@ export class Welcome extends React.Component<WelcomeProps, void>{
         });
     }
 
-    private onCreate = (name: string, template: Template) => {
+    @bind
+    private onCreate(name: string, template: Template) {
         this.props.onOpen(new Project(name, template));
     }
 

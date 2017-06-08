@@ -4,6 +4,8 @@ import * as classNames from "classnames";
 import { observable, computed } from "mobx";
 import { observer } from "mobx-react";
 
+import bind from "bind-decorator";
+
 import { PanelAction } from "./panel";
 import "./expendable.less";
 
@@ -17,7 +19,8 @@ export interface ExpendableProps {
 
 @observer
 export class Expendable extends React.Component<ExpendableProps, void> {
-    @observable private expended: boolean;
+    @observable
+    private expended: boolean;
 
     constructor(props: ExpendableProps) {
         super(props);
@@ -25,7 +28,8 @@ export class Expendable extends React.Component<ExpendableProps, void> {
         this.expended = props.defaultExpended;
     }
 
-    onHeaderClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    @bind
+    private onHeaderClick(e: React.MouseEvent<HTMLDivElement>) {
         this.expended = !this.expended;
 
         if (this.props.onExpendedChanged !== undefined)
@@ -56,9 +60,13 @@ export class Expendable extends React.Component<ExpendableProps, void> {
                     <div className="title">{this.props.title}</div>
                     {renderActions(this.props)}
                 </div>
-                <div className="body" style={{ padding: this.props.padding }}>
-                    {this.expended && this.props.children}
-                </div>
+
+                {this.expended && (
+                    <div className="body" style={{ padding: this.props.padding }}>
+                        {this.props.children}
+                    </div>
+                )}
+
             </div>
         );
     }

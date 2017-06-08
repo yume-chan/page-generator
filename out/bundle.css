@@ -131,10 +131,10 @@ webview {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.header .actions {
+.actions {
   display: flex;
 }
-.header .actions .action {
+.actions .action {
   width: 28px;
   background-size: 16px;
   background-position: 50%;
@@ -150,6 +150,7 @@ aside h1 {
   height: 36px;
   line-height: 36px;
   margin: 0 8px;
+  padding-left: 12px;
   font-family: Segoe UI;
   font-size: 11px;
   font-weight: normal;
@@ -159,7 +160,37 @@ aside h1 {
   cursor: default;
 }
 .icon-new {
-  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2019.2.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2016%2016%22%20style%3D%22enable-background%3Anew%200%200%2016%2016%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23C5C5C5%3B%7D%0A%3C%2Fstyle%3E%0A%3Crect%20x%3D%227%22%20y%3D%223%22%20class%3D%22st0%22%20width%3D%223%22%20height%3D%2211%22%2F%3E%0A%3Crect%20x%3D%223%22%20y%3D%227%22%20class%3D%22st0%22%20width%3D%2211%22%20height%3D%223%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0D%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2019.2.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0D%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0D%0A%09%20viewBox%3D%220%200%2016%2016%22%20style%3D%22enable-background%3Anew%200%200%2016%2016%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0D%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0D%0A%09.st0%7Bfill%3A%23C5C5C5%3B%7D%0D%0A%3C%2Fstyle%3E%0D%0A%3Crect%20x%3D%227%22%20y%3D%223%22%20class%3D%22st0%22%20width%3D%223%22%20height%3D%2211%22%2F%3E%0D%0A%3Crect%20x%3D%223%22%20y%3D%227%22%20class%3D%22st0%22%20width%3D%2211%22%20height%3D%223%22%2F%3E%0D%0A%3C%2Fsvg%3E%0D%0A");
+  cursor: pointer;
+}
+.icon-kill {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0D%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2019.2.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0D%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0D%0A%09%20viewBox%3D%220%200%2016%2016%22%20style%3D%22enable-background%3Anew%200%200%2016%2016%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0D%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0D%0A%09.st0%7Bfill%3A%23C5C5C5%3B%7D%0D%0A%3C%2Fstyle%3E%0D%0A%3Cpath%20class%3D%22st0%22%20d%3D%22M10%2C3V2c0-0.6-0.4-1-1-1H6C5.4%2C1%2C5%2C1.4%2C5%2C2v1H2v1h1v10c0%2C0.6%2C0.4%2C1%2C1%2C1h7c0.6%2C0%2C1-0.4%2C1-1V4h1V3H10z%20M6%2C12H5V6%0D%0A%09h1V12z%20M6%2C2h3v1H6V2z%20M8%2C12H7V6h1V12z%20M10%2C12H9V6h1V12z%22%2F%3E%0D%0A%3C%2Fsvg%3E%0D%0A");
+  cursor: pointer;
+}
+.icon-saveall {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20enable-background%3D%22new%200%200%2016%2016%22%20height%3D%2216%22%20width%3D%2216%22%3E%3Cpath%20fill%3D%22%231E1E1E%22%20d%3D%22M16%202.6L13.4%200H6v6H0v10h10v-6h6z%22%2F%3E%3Cg%20fill%3D%22%2375BEFF%22%3E%3Cpath%20d%3D%22M5%207h1v2H5zM11%201h1v2h-1zM13%201v3H9V1H7v5h.4L10%208.6V9h5V3zM7%2010H3V7H1v8h8V9L7%207z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  height: 100% !important;
+  cursor: pointer;
+}
+.list-item {
+  display: flex;
+  line-height: 22px;
+  margin-right: -8px;
+}
+.list-item .path {
+  flex-shrink: 1;
+  flex-basis: auto;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-item .content {
+  flex-shrink: 0;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 html,
 body,

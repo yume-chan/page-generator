@@ -15,14 +15,12 @@ export interface PanelProps {
     actions?: PanelAction[];
 }
 
-export class Panel extends React.Component<PanelProps, void> {
-    render() {
-        return (
-            <aside style={this.props.style}>
-                <h1>{this.props.title}</h1>
+export function Panel(props: PanelProps & { children?: React.ReactNode }) {
+    return (
+        <aside style={props.style}>
+            <h1>{props.title}</h1>
 
-                {this.props.children}
-            </aside>
-        );
-    }
+            {props.children}
+        </aside>
+    );
 }

@@ -14,13 +14,12 @@ export interface TextAreaProps {
 @observer
 export class TextArea extends React.Component<TextAreaProps, void> {
     private mirror: HTMLDivElement;
-    private value: string | undefined;
-    @observable private height: number;
+    
+    @observable
+    private height: number;
 
     constructor(props: TextAreaProps) {
         super(props);
-
-        this.value = props.value;
     }
 
     updateLayout() {
@@ -41,17 +40,15 @@ export class TextArea extends React.Component<TextAreaProps, void> {
         this.props.onChange(e.target.value);
     }
 
-    componentWillUpdate(nextProps: Readonly<TextAreaProps>) {
-        this.value = nextProps.value;
-        if (this.value !== undefined && this.value.endsWith("\n"))
-            this.value += " ";
-    }
-
     componentDidUpdate() {
         this.updateLayout();
     }
 
     render() {
+        let mirrorValue = this.props.value;
+        if (mirrorValue !== undefined && mirrorValue.endsWith("\n"))
+            mirrorValue += " ";
+
         return (
             <div className="wrapper">
                 <textarea onInput={this.onInput}
@@ -62,7 +59,7 @@ export class TextArea extends React.Component<TextAreaProps, void> {
                     autoCapitalize="off"
                     spellCheck={false}>
                 </textarea>
-                <div className="mirror" ref={this.onMirrorRef}>{this.value}</div>
+                <div className="mirror" ref={this.onMirrorRef}>{mirrorValue}</div>
             </div>
         );
     }
