@@ -3,15 +3,14 @@ aside {
 
     background-color: rgb(37, 37, 38);
 
-    h1 {
-        display: block;
+    > header {
+        display: flex;
 
         @height: 36px;
         height: @height;
         line-height: @height;
 
         margin: 0 8px;
-        padding-left: 12px;
         
         font-family: Segoe UI;
         font-size: 11px;
@@ -21,5 +20,19 @@ aside {
 
         user-select: none;
         cursor: default;
+        
+        .title {
+            flex-grow: 1;
+            padding-left: 12px;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        > .actions > .action {
+            height: 35px;
+            line-height: 35px;
+        }
     }
 }

@@ -14,6 +14,8 @@ export interface TemplateReplace {
 }
 
 export interface Template {
+    readonly category: string;
+    readonly customScript?: string
     readonly name: string;
     readonly uri: string;
     readonly uriReplace: string;
@@ -26,27 +28,47 @@ export interface Template {
     readonly backgroundReplace: string;
 }
 
+export interface TemplateCategory {
+    name: string;
+    templates: Template[];
+}
+
 export namespace Template {
-    export async function loadAsync(folder: string): Promise<Template[]> {
-        const files = await fs.readdir(folder);
+    export async function loadAsync(folder: string): Promise<TemplateCategory[]> {
+        const result: TemplateCategory[] = [];
 
-        const result: Template[] = [];
+        for (const categoryName of await fs.readdir(folder)) {
+            const categoryPath = path.resolve(folder, categoryName);
+            if ((await fs.stat(categoryPath)).isDirectory()) {
+                const templates: Template[] = [];
+                const category: TemplateCategory = {
+                    name: categoryName,
+                    templates
+                };
+                result.push(category);
 
-        for (const file of files) {
-            const fullPath = path.resolve(folder, file);
-            const stat = await fs.stat(fullPath);
-            if (stat.isDirectory()) {
-                const template = await fs.readJson(path.resolve(fullPath, "manifest.json"), "utf-8") as Template;
-                // Temporarily breaks readonly contract
-                (template as any).name = file;
+                for (const templateName of await fs.readdir(categoryPath)) {
+                    const templatePath = path.resolve(categoryPath, templateName);
+                    if ((await fs.stat(templatePath)).isDirectory()) {
+                        const template = await fs.readJson(path.resolve(templatePath, "manifest.json"), "utf-8") as Template;
+                        // Temporarily breaks readonly contract
+                        (template as any).category = categoryName;
+                        (template as any).name = templateName;
 
-                const htmlPath = path.resolve(fullPath, template.htmlName);
-                (template as any).htmlPath = htmlPath;
+                        if (template.customScript !== undefined) {
+                            const script = path.resolve(templatePath, template.customScript);
+                            (template as any).customScript = script;
+                        }
 
-                const html = await fs.readFile(htmlPath, "utf-8");
-                (template as any).html = html;
+                        const htmlPath = path.resolve(templatePath, template.htmlName);
+                        (template as any).htmlPath = htmlPath;
 
-                result.push(template);
+                        const html = await fs.readFile(htmlPath, "utf-8");
+                        (template as any).html = html;
+
+                        templates.push(template);
+                    }
+                }
             }
         }
 
@@ -90,7 +112,7 @@ export class Project {
     @observable
     dirty: boolean;
 
-    @observable
+    @observable.shallow
     background: ProjectBackground[] = [];
 
     @observable
@@ -120,6 +142,7 @@ export class Project {
         this.dirty = false;
     }
 
+    @action
     async addBackgroundAsync(...fullPath: string[]) {
         for (const item of fullPath) {
             // Use unix path for `relativePath`
@@ -138,15 +161,19 @@ export class Project {
         }
     }
 
+    reorderBackground(oldIndex: number, newIndex: number) {
+        
+    }
+
     async saveAsync(filename: string) {
         this.filename = filename;
 
         const dirname = path.dirname(filename);
-        await fs.mkdirp(dirname);
+        await fs.ensureDir(dirname);
 
         // Copy assets
         this.assetsPath = path.resolve(dirname, this.name);
-        await fs.mkdirp(this.assetsPath);
+        await fs.ensureDir(this.assetsPath);
 
         const background: string[] = [];
         for (const item of this.background) {
@@ -173,7 +200,7 @@ export class Project {
 
         const file: ProjectFile = {
             name: this.name,
-            template: this.template.name,
+            template: `${this.template.category}/${this.template.name}`,
             background: this.background.map(item => item.relativePath as string),
             templateReplace: replace
         }
@@ -240,6 +267,11 @@ height: ${height + "px"};
         //     background.push(`<img src="${item}">`);
 
         result = result.replace("{{CONTENT}}", "");
+
+        if (template.customScript !== undefined) {
+            const build = (global as any).require(template.customScript);
+            result = await build(result, preview);
+        }
 
         if (preview) {
             switch (template.htmlType) {

@@ -1,67 +1,103 @@
 import * as path from "path";
 
 import * as electron from "electron";
+import { remote } from "electron";
+const { dialog, Menu, MenuItem } = remote;
+
 import * as React from "react";
 
-import { observable, computed, autorun } from "mobx";
+import { observable, computed } from "mobx";
 import { observer } from "mobx-react";
 
 import bind from "bind-decorator";
 
+import { PanelAction, Panel } from "./panel";
+import { TextArea } from "./text-area";
 import { Project } from "./project";
-import "./editor.less";
-
-declare global {
-    namespace JSX {
-        interface IntrinsicElements {
-            webview: React.HTMLProps<Electron.WebviewTag>;
-        }
-    }
-}
+import { Expendable } from "./expendable";
 
 export interface EditorProps {
     project: Project;
     style?: React.CSSProperties;
+    onReplaceChange(key: string, value: string): void;
 }
 
 @observer
 export class Editor extends React.Component<EditorProps, void> {
-    private webview: Electron.WebviewTag | undefined;
+    render() {
+        const actions: PanelAction[] = [
+            {
+                className: "icon-new",
+                onClick: () => {
+                    dialog.showOpenDialog(remote.getCurrentWindow(), {
+                        properties: ["openFile", "multiSelections"],
+                        filters: [
+                            {
+                                name: "Image",
+                                extensions: ["png", "jpg"]
+                            }
+                        ]
+                    }, async files => {
+                        if (files === undefined)
+                            return;
 
-    @observable
-    private content: string = "";
+                        await this.props.project.addBackgroundAsync(...files);
+                    });
+                }
+            }
+        ];
 
-    constructor(props: EditorProps) {
-        super(props);
+        function renderBackgrounds(project: Project) {
+            return project.background.map((item, index) => {
+                let filepath = item.relativePath;
+                let sep = "/";
+                if (filepath === undefined) {
+                    filepath = item.path;
+                    sep = path.sep;
+                }
 
-        autorun(() => this.computeContentAsync(props.project));
-    }
+                const parsed = path.parse(filepath);
 
-    @bind
-    private onWebviewRef(e: Electron.WebviewTag) {
-        if (e === null) {
-            this.webview = undefined;
-            return;
+                return (
+                    <div key={index} className="list-item">
+                        <div className="path" title={item.path}>{parsed.dir}</div>
+                        <div className="content" title={item.path}>{sep + parsed.base}</div>
+                        <div className="actions">
+                            <div className="action icon-kill" onClick={e => project.background.splice(index, 1)}></div>
+                        </div>
+                    </div>
+                );
+            });
         }
 
-        this.webview = e;
-        this.webview.httpreferrer = this.props.project.uri;
-        this.webview.disablewebsecurity = "true";
-        this.webview.addEventListener("dom-ready", () => {
-            if (this.webview !== undefined)
-                this.webview.openDevTools();
+        const Replaces = observer(({ replaces }: { replaces: Map<string, string> }) => {
+            const ReplaceInput = observer(({ name, replaces }: { name: string, replaces: Map<string, string> }) => (
+                <div>
+                    <h4>{name}</h4>
+                    <TextArea onChange={(value) => this.props.onReplaceChange(name, value)} value={replaces.get(name)} />
+                </div>
+            ))
+
+            const children: JSX.Element[] = [];
+            // for (const [key, value] of replaces)
+            for (const key of replaces.keys())
+                children.push(<ReplaceInput key={key} name={key} replaces={replaces} />);
+
+            return (
+                <Expendable title="Template" defaultExpended={true} padding="8px">
+                    {children}
+                </Expendable>
+            );
         });
-    }
 
-    private async computeContentAsync(project: Project) {
-        this.content = await project.buildAsync(true);
-    };
-
-    render() {
         return (
-            <webview ref={this.onWebviewRef}
-                src={"data:text/html; charset=utf-8," + encodeURIComponent(this.content)}
-                style={this.props.style} />
+            <Panel title="Properties" style={this.props.style}>
+                <Replaces replaces={this.props.project.templateReplace} />
+
+                <Expendable title="Background" defaultExpended={true} padding="8px" actions={actions}>
+                    {renderBackgrounds(this.props.project)}
+                </Expendable>
+            </Panel>
         );
     }
 }

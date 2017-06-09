@@ -10,6 +10,9 @@
         "importHelpers": true,
         "baseUrl": ".",
         "paths": {
+            "mobx": [
+                "./mobx-async-action/src/mobx.ts"
+            ],
             "*": [
                 "./types/*"
             ]

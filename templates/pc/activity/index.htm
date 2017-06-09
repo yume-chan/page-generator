@@ -1,0 +1,44 @@
+<% include ././cfg/envpath.ejs %>
+<% var user = {}; %>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}">
+    <meta name="keywords" content="{{KEYWORDS}}">
+    <link rel="stylesheet" href="https://icdn.cnaidai.com/aidai/webpc/static/css/cmn/aidai_common.css"><!--重写 和头部尾部样式-->
+    <script type="text/javascript" src="https://icdn.cnaidai.com/aidai/webpc/static/js/cmn/jquery-1.12.0.min.js"></script>
+	<script type="text/javascript" src="https://icdn.cnaidai.com/aidai/webpc/static/js/cmn/header.js"></script>
+    <style>
+        .g-bd {
+            /*{{BACKGROUND}}*/
+            background-position-x: center;
+            background-repeat: no-repeat;
+            min-width: 1200px;
+        }
+    </style>
+</head>
+
+<body>
+	<div class="g-hd">
+        <% include ././cmn/top.ejs %>
+        <% include ././cmn/header.ejs%>
+	</div>
+    
+    <div class="g-bd">
+        {{TIME}}
+        {{CONTENT}}
+    </div>
+    
+	<div class="g-ft">
+		<% include ././cmn/footer.ejs %>
+	</div>
+	<div class="g_sb">
+		<% include ././cmn/side_bar.ejs %>
+	</div>
+</body>
+
+</html>

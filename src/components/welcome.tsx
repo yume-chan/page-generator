@@ -5,6 +5,7 @@ import { remote } from "electron";
 const { dialog, Menu, MenuItem } = remote;
 
 import * as React from "react";
+import * as classNames from "classnames";
 
 import { observable, computed } from "mobx"
 import { ObservableArray } from "mobx/lib/types/observablearray";
@@ -12,9 +13,12 @@ import { observer } from "mobx-react";
 
 import bind from "bind-decorator";
 
-import { Dialog } from "./dialog";
-import { NewFile } from "./new-file";
-import { Project, Template, ProjectFile } from "./project";
+import { Project, Template, ProjectFile, TemplateCategory } from "./project";
+import { Panel, PanelAction } from "./panel";
+import { Expendable } from "./expendable";
+import { TextArea } from "./text-area";
+
+import "./welcome.less";
 
 enum WelcomeState {
     Initial,
@@ -23,16 +27,21 @@ enum WelcomeState {
 }
 
 export interface WelcomeProps {
+    style?: React.CSSProperties;
+    onPreview(project: Project): void;
     onOpen(project: Project): void;
 }
 
 @observer
-export class Welcome extends React.Component<WelcomeProps, void>{
-    @observable
-    private _state: WelcomeState = WelcomeState.Initial;
-
+export class Welcome extends React.Component<WelcomeProps, void> {
     @observable.shallow
-    private templates: Template[];
+    private templates: TemplateCategory[] = [];
+
+    @observable
+    private name: string;
+
+    @observable.ref
+    private template: Template;
 
     constructor() {
         super();
@@ -41,8 +50,7 @@ export class Welcome extends React.Component<WelcomeProps, void>{
     }
 
     private async loadTemplatesAsync() {
-        this.templates = await Template.loadAsync("./templates/");
-        this._state = WelcomeState.Welcome;
+        this.templates.push(... await Template.loadAsync("./templates/"));
     }
 
     @bind
@@ -57,32 +65,57 @@ export class Welcome extends React.Component<WelcomeProps, void>{
                 const content = await fs.readFile(files[0], "utf-8");
                 const file = JSON.parse(content) as ProjectFile;
 
-                const template = this.templates.find(x => x.name == file.template);
-                if (template !== undefined) {
-                    this.props.onOpen(new Project(file.name, template, files[0], file));
+                const [categoryName, name] = file.template.split("/");
+                const category = this.templates.find(x => x.name == categoryName);
+                if (category !== undefined) {
+                    const template = category.templates.find(x => x.name == name);
+                    if (template !== undefined)
+                        this.props.onOpen(new Project(file.name, template, files[0], file));
                 }
             }
         });
     }
 
     @bind
-    private onCreate(name: string, template: Template) {
-        this.props.onOpen(new Project(name, template));
+    private onCreate() {
+        this.props.onOpen(new Project(this.name, this.template));
+    }
+
+    @bind
+    private onTemplateSelected(template: Template) {
+        this.template = template;
+        this.props.onPreview(new Project("preview", template));
     }
 
     render() {
-        switch (this._state) {
-            case WelcomeState.Initial:
-                return <div />;
-            case WelcomeState.Welcome:
-                return (
-                    <Dialog title="Welcome" className="welcome">
-                        <div className="button" onClick={() => this._state = WelcomeState.NewFile}>New</div>
-                        <div className="button" onClick={this.onOpen}>Open</div>
-                    </Dialog>
-                );
-            case WelcomeState.NewFile:
-                return <NewFile onCreate={this.onCreate} onCancel={() => this._state = WelcomeState.Welcome} templates={this.templates} />;
-        }
+        const actions: PanelAction[] = [
+            {
+                className: "icon-check",
+                title: "OK",
+                onClick: this.onCreate
+            },
+            {
+                className: "icon-addfile",
+                title: "Open",
+                onClick: this.onOpen
+            }
+        ];
+
+        return (
+            <Panel title="New" actions={actions} style={this.props.style}>
+                <div style={{ padding: "0 8px 8px 16px" }}>
+                    <h4>Project name</h4>
+                    <TextArea onChange={value => this.name = value} value={this.name} />
+                </div>
+
+                {this.templates && this.templates.map(category => (
+                    <Expendable key={category.name} title={category.name} defaultExpended={true}>
+                        {category.templates.map(template => (
+                            <div className={classNames("template", { "highlight": this.template == template })} style={{ paddingLeft: "24px", fontSize: "13px", height: "24px", lineHeight: "24px", cursor: "pointer" }} key={template.name} onClick={e => this.onTemplateSelected(template)}>{template.name}</div>
+                        ))}
+                    </Expendable>
+                ))}
+            </Panel>
+        );
     }
 }

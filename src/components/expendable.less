@@ -1,37 +1,38 @@
-.header {
-    background-image: data-uri("expanded-dark.svg");
-    background-position: 2px;
-    background-size: 16px;
-    background-repeat: no-repeat;
+.expendable{
+    > header {
+        background-image: data-uri("expanded-dark.svg");
+        background-position: 2px;
+        background-size: 16px;
+        background-repeat: no-repeat;
 
-    height: 22px;
-    background-color: rgba(128, 128, 128, 0.2);
+        height: 22px;
+        background-color: rgba(128, 128, 128, 0.2);
 
-    position: relative;
-    line-height: 22px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding-left: 20px;
-    overflow: hidden;
-    display: flex;
-
-    color: #cccccc;
-
-    cursor: pointer;
-
-    &.collapsed {
-        background-image: data-uri("collapsed-dark.svg");
-    }
-
-    .title {
-        flex-grow: 1;
-
+        position: relative;
+        line-height: 22px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding-left: 20px;
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
+        display: flex;
 
+        color: #cccccc;
+
+        cursor: pointer;
+
+        &.collapsed {
+            background-image: data-uri("collapsed-dark.svg");
+        }
+
+        .title {
+            flex-grow: 1;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
 }
 
 .actions {

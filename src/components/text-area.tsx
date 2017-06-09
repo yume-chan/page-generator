@@ -3,6 +3,8 @@ import * as React from "react";
 import { observable, computed } from "mobx";
 import { observer } from "mobx-react";
 
+import bind from "bind-decorator";
+
 import "./text-area.less";
 
 export interface TextAreaProps {
@@ -13,8 +15,8 @@ export interface TextAreaProps {
 
 @observer
 export class TextArea extends React.Component<TextAreaProps, void> {
-    private mirror: HTMLDivElement;
-    
+    private mirror: HTMLDivElement | undefined | null;
+
     @observable
     private height: number;
 
@@ -23,7 +25,7 @@ export class TextArea extends React.Component<TextAreaProps, void> {
     }
 
     updateLayout() {
-        if (this.mirror === null)
+        if (this.mirror === null || this.mirror === undefined)
             return;
 
         const height = this.mirror.getBoundingClientRect().height;
@@ -31,12 +33,14 @@ export class TextArea extends React.Component<TextAreaProps, void> {
             this.height = height;
     }
 
-    onMirrorRef = (e: HTMLDivElement) => {
+    @bind
+    onMirrorRef(e: HTMLDivElement) {
         this.mirror = e;
         this.updateLayout();
     }
 
-    onInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    @bind
+    onInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         this.props.onChange(e.target.value);
     }
 
@@ -51,7 +55,7 @@ export class TextArea extends React.Component<TextAreaProps, void> {
 
         return (
             <div className="wrapper">
-                <textarea onInput={this.onInput}
+                <textarea onInput={e=>this.props.onChange(e.currentTarget.value)}
                     style={{ height: this.height + "px" }}
                     placeholder={this.props.placeholder}
                     defaultValue={this.props.value}

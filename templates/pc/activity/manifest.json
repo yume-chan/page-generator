@@ -1,0 +1,34 @@
+{
+    "customScript": "build.js",
+    "uri": "http://pc.cnaidai.com/webpc/activity/{NAME}/",
+    "uriReplace": "{NAME}",
+    "htmlName": "index.htm",
+    "htmlType": "ejs",
+    "htmlReplace": {
+        "title": {
+            "replace": "{{TITLE}}",
+            "default": "爱贷网"
+        },
+        "description": {
+            "replace": "{{DESCRIPTION}}",
+            "default": "爱贷网全国领先的P2P网贷平台，为个人和企业提供网络贷款，网络理财、信用贷款、小额贷款、P2P理财、投资等网贷投资理财服务。是一个安全、便捷、高效、透明的p2p网贷平台。"
+        },
+        "keywords": {
+            "replace": "{{KEYWORDS}}",
+            "default": "爱贷网,网贷,p2p网贷,贷款,p2p理财,小额贷款,投资理财，信用贷款,网络理财,个人理财,网络贷款"
+        },
+        "ejs path": {
+            "replace": "\\./",
+            "default": "../",
+            "match": "<%.*?%>",
+            "buildOnly": true
+        },
+        "fake user": {
+            "replace": "<% var user = {}; %>",
+            "default": "",
+            "buildOnly": true
+        }
+    },
+    "background": "css",
+    "backgroundReplace": "/*{{BACKGROUND}}*/"
+}

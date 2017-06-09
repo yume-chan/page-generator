@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as classNames from "classnames";
 
 import "./panel.less";
 
@@ -16,9 +17,28 @@ export interface PanelProps {
 }
 
 export function Panel(props: PanelProps & { children?: React.ReactNode }) {
+    function renderActions(props: PanelProps) {
+        if (props.actions === undefined || props.actions.length == 0)
+            return undefined;
+
+        return (
+            <div className="actions">
+                {props.actions.map(value => (
+                    <div key={value.className}
+                        className={classNames("action", value.className)}
+                        title={value.title}
+                        onClick={e => { e.stopPropagation(); value.onClick() }}>{value.content}</div>
+                ))}
+            </div>
+        );
+    }
+
     return (
         <aside style={props.style}>
-            <h1>{props.title}</h1>
+            <header>
+                <div className="title">{props.title}</div>
+                {renderActions(props)}
+            </header>
 
             {props.children}
         </aside>

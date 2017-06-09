@@ -55,11 +55,11 @@ export class Expendable extends React.Component<ExpendableProps, void> {
 
         return (
             <div className="expendable">
-                <div className={classNames("header", { "collapsed": !this.expended })}
+                <header className={classNames({ "collapsed": !this.expended })}
                     onClick={this.onHeaderClick}>
                     <div className="title">{this.props.title}</div>
                     {renderActions(this.props)}
-                </div>
+                </header>
 
                 {this.expended && (
                     <div className="body" style={{ padding: this.props.padding }}>
