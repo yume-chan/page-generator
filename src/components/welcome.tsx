@@ -7,11 +7,9 @@ const { dialog, Menu, MenuItem } = remote;
 import * as React from "react";
 import * as classNames from "classnames";
 
-import { observable, computed } from "mobx"
-import { ObservableArray } from "mobx/lib/types/observablearray";
-import { observer } from "mobx-react";
-
 import bind from "bind-decorator";
+
+import { observable, observer, autorun } from "../object-proxy";
 
 import { Project, Template, ProjectFile, TemplateCategory } from "./project";
 import { Panel, PanelAction } from "./panel";
@@ -34,13 +32,13 @@ export interface WelcomeProps {
 
 @observer
 export class Welcome extends React.Component<WelcomeProps, void> {
-    @observable.shallow
+    @observable.array
     private templates: TemplateCategory[] = [];
 
     @observable
     private name: string;
 
-    @observable.ref
+    @observable
     private template: Template;
 
     constructor() {

@@ -9,10 +9,11 @@
         "sourceMap": true,
         "importHelpers": true,
         "baseUrl": ".",
+        "lib": [
+            "es7",
+            "dom"
+        ],
         "paths": {
-            "mobx": [
-                "./mobx-async-action/src/mobx.ts"
-            ],
             "*": [
                 "./types/*"
             ]

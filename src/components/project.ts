@@ -1,10 +1,10 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { observable, computed, action } from "mobx";
-
 import * as sizeOf from "image-size";
 import * as ejs from "ejs";
+
+import { observable, observer, autorun } from "../object-proxy";
 
 export interface TemplateReplace {
     readonly replace: string;
@@ -112,7 +112,7 @@ export class Project {
     @observable
     dirty: boolean;
 
-    @observable.shallow
+    @observable
     background: ProjectBackground[] = [];
 
     @observable
@@ -142,7 +142,7 @@ export class Project {
         this.dirty = false;
     }
 
-    @action
+    
     async addBackgroundAsync(...fullPath: string[]) {
         for (const item of fullPath) {
             // Use unix path for `relativePath`

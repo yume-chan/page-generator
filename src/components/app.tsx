@@ -6,10 +6,9 @@ const { dialog, Menu, MenuItem } = remote;
 
 import * as React from "react";
 
-import { observable, computed } from "mobx"
-import { observer } from "mobx-react";
-
 import bind from "bind-decorator";
+
+import { observable, observer } from "../object-proxy";
 
 import { Project, Template } from "./project";
 import { DockPanel } from "./dock-panel";

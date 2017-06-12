@@ -24,9 +24,6 @@ module.exports = {
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: [".ts", ".tsx", ".js", ".json"],
-        alias: {
-            "mobx$": __dirname + "/mobx-async-action/src/mobx.ts"
-        }
     },
 
     module: {

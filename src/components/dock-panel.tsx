@@ -1,9 +1,8 @@
 import * as React from "react";
 
-import { observable, computed } from "mobx";
-import { observer } from "mobx-react";
-
 import bind from "bind-decorator";
+
+import { observable, observer } from "../object-proxy";
 
 export interface SeparatorProps {
     orientation: "vertical" | "horizontal";

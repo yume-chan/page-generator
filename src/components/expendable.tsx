@@ -1,10 +1,9 @@
 import * as React from "react";
 import * as classNames from "classnames";
 
-import { observable, computed } from "mobx";
-import { observer } from "mobx-react";
-
 import bind from "bind-decorator";
+
+import { observable, observer } from "../object-proxy";
 
 import { PanelAction } from "./panel";
 import "./expendable.less";

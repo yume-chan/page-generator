@@ -6,10 +6,9 @@ const { dialog, Menu, MenuItem } = remote;
 
 import * as React from "react";
 
-import { observable, computed, autorun } from "mobx";
-import { observer } from "mobx-react";
-
 import bind from "bind-decorator";
+
+import { observable, observer, autorun } from "../object-proxy";
 
 import { Project } from "./project";
 import "./preview.less";
@@ -43,7 +42,7 @@ export class Preview extends React.Component<EditorProps, void> {
             return;
         }
 
-        autorun(() => this.computeContentAsync(this.props.project));
+        this.computeContentAsync();
 
         this.webview = e;
         this.webview.httpreferrer = this.props.project.uri;
@@ -54,9 +53,11 @@ export class Preview extends React.Component<EditorProps, void> {
         });
     }
 
-    private async computeContentAsync(project: Project) {
-        this.content = await project.buildAsync(true);
-    };
+    @autorun
+    @bind
+    private async computeContentAsync() {
+        this.content = await this.props.project.buildAsync(true);
+    }
 
     @bind
     private async save() {

@@ -25,10 +25,10 @@ export function executeAction(actionName: string, fn: Function, scope?: any, arg
 	const runInfo = startAction(actionName, fn, scope, args);
 	let sync = true;
 	try {
-		const retval = fn.apply(scope, args);
+		let retval = fn.apply(scope, args);
 		if (retval instanceof Promise) {
 			sync = false;
-			retval.then(result => {
+			retval = retval.then(result => {
 				endAction(runInfo);
 				return result;
 			}, err => {
