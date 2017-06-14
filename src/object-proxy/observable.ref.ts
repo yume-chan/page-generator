@@ -1,8 +1,9 @@
-import { run, FunctionRef } from "./autorun";
-import { suppress, pending } from "./action";
+import { run } from "./autorun";
+import { suppress, pending, FunctionRef } from "./action";
 
 const reaction: WeakMap<object, { [key: string]: Set<FunctionRef> }> = new WeakMap<any, any>();
 const read: WeakMap<object, { [key: string]: boolean }> = new WeakMap<any, any>();
+// const store: WeakMap<object, { [key: string]: any }> = new WeakMap<any, any>();
 
 export function onGet(scope: object, propertyKey: string) {
     const r = read.get(scope);
@@ -32,12 +33,6 @@ export function onGet(scope: object, propertyKey: string) {
 }
 
 export function onSet(scope: object, propertyKey: string) {
-    for (const method of run) {
-        const ref = method.ref!.get(scope);
-        if (ref !== undefined && ref.includes(propertyKey))
-            throw "Cannot modify an observed value in autorun";
-    }
-
     const obj = reaction.get(scope);
     if (obj === undefined)
         return;
@@ -63,7 +58,13 @@ export function onSet(scope: object, propertyKey: string) {
     }
 
     if (!suppress.value) {
-        for (const item of list) {
+        for (const method of run) {
+            const ref = method.ref!.get(scope);
+            if (ref !== undefined && ref.includes(propertyKey))
+                throw "Cannot modify an observed value in autorun";
+        }
+
+        for (const item of new Set(list)) {
             const retval = item();
             if (retval instanceof Promise) {
                 count++;
@@ -73,7 +74,7 @@ export function onSet(scope: object, propertyKey: string) {
 
         then();
     } else {
-        for (const item of list) {
+        for (const item of new Set(list)) {
             pending.add(item);
         }
     }
@@ -98,16 +99,27 @@ export function wrap(beforeSet: (value: any) => any) {
                 }
             }
         } else {
-            let value: T;
             descriptor = {
                 configurable: false,
                 enumerable: true,
                 get: function (this: object) {
                     onGet(this, propertyKey);
-                    return value;
+                    // const object = store.get(this);
+                    const object = (this as any).$store;
+                    if (object !== undefined)
+                        return object[propertyKey];
+                    else
+                        return undefined;
                 },
                 set: function (this: object, v: any) {
-                    value = beforeSet(v);
+                    const value = beforeSet(v);
+                    // const object = store.get(this);
+                    const object = (this as any).$store;
+                    if (object !== undefined)
+                        object[propertyKey] = value;
+                    else
+                        // store.set(this, { [propertyKey]: value });
+                        (this as any).$store = { [propertyKey]: value };
                     onSet(this, propertyKey);
                 }
             };

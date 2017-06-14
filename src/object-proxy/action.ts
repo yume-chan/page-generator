@@ -1,9 +1,13 @@
-import { FunctionRef } from "./autorun";
+type NoReturn = () => void | Promise<void>;
+export type FunctionRef = NoReturn & {
+    ref?: WeakMap<object, (string)[]>;
+    value?: NoReturn;
+}
 
 export let suppress: { value: boolean } = { value: false };
 export const pending: Set<FunctionRef> = new Set<any>();
 
-function wrap(value: Function): () => void | Promise<void> {
+export function wrap(value: Function): Function {
     return function (this: object) {
         const old = suppress.value;
         function then() {
@@ -11,42 +15,33 @@ function wrap(value: Function): () => void | Promise<void> {
                 for (const item of pending)
                     item();
 
+                pending.clear();
                 suppress.value = false;
             }
         }
 
         suppress.value = true;
-        let sync = true;
         try {
             const retval = value.apply(this, arguments);
-            if (retval instanceof Promise) {
-                sync = false;
-                return retval.then(result => {
-                    then();
-                    return result;
-                }, err => {
-                    then();
-                    throw err;
-                });
-            }
+            if (retval instanceof Promise && process.env.NODE_ENV != "production")
+                console.warn("Don't decorate an async function with @action.");
             return retval;
         }
         finally {
-            if (sync)
-                then();
+            then();
         }
     };
 }
 
-export function action(target: object, targetKey: string, descriptor: TypedPropertyDescriptor<Function>): TypedPropertyDescriptor<Function> {
+export function action<T extends Function>(target: object, targetKey: string, descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> {
     const value = descriptor.value;
     if (value !== undefined) {
-        descriptor.value = wrap(value);
+        descriptor.value = wrap(value) as T;
     } else {
         const get = descriptor.get!;
         descriptor.get = function (this: object) {
             const value: FunctionRef = get.apply(this);
-            return wrap(value);
+            return wrap(value) as T;
         }
     }
 

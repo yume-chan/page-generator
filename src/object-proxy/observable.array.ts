@@ -2,7 +2,7 @@ import { onGet, onSet, wrap } from "./observable.ref";
 
 function createIterator<T>(value: T[]) {
     return function () {
-        let i = 0;
+        let i = -1;
         return {
             next: function () {
                 i++;
@@ -19,6 +19,7 @@ function createIterator<T>(value: T[]) {
 function createProxy<T>(value: T[]): T[] {
     if (!(value instanceof Array))
         return value;
+
     return new Proxy(value, {
         get(target: T[], p: PropertyKey, receiver: any) {
             if (typeof p === "number") {
@@ -36,6 +37,9 @@ function createProxy<T>(value: T[]): T[] {
             }
 
             switch (p) {
+                case "length":
+                    onGet(target, "length");
+                    return target.length;
                 case "map":
                     return function map<Z, U>(callbackfn: (this: Z, value: T, index: number, array: T[]) => U, thisArg: Z): U[] {
                         onGet(target, "length");
@@ -54,6 +58,23 @@ function createProxy<T>(value: T[]): T[] {
                             return retval;
                         }
                         return 0;
+                    }
+                case "splice":
+                    return function splice(start: number, deleteCount: number, ...items: T[]): T[] {
+                        const retval = target.splice(start, deleteCount, ...items);
+
+                        if (deleteCount == items.length) {
+                            for (let i = 0; i < items.length; i++)
+                                onSet(target, (start + i).toString());
+                        }
+                        else {
+                            const end = items.length > deleteCount ? target.length : target.length + (deleteCount - items.length);
+                            for (let i = 0; i < items.length; i++)
+                                onSet(target, (start + i).toString());
+                            onSet(target, "length");
+                        }
+
+                        return retval;
                     }
                 default:
                     return (target as any)[p];

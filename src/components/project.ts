@@ -5,6 +5,7 @@ import * as sizeOf from "image-size";
 import * as ejs from "ejs";
 
 import { observable, observer, autorun } from "../object-proxy";
+import { action } from "../object-proxy/";
 
 export interface TemplateReplace {
     readonly replace: string;
@@ -24,6 +25,7 @@ export interface Template {
     readonly html: string;
     readonly htmlType: "ejs" | "html";
     readonly htmlReplace: { readonly [key: string]: TemplateReplace };
+    readonly contentReplace: string | undefined;
     readonly background: "css";
     readonly backgroundReplace: string;
 }
@@ -92,6 +94,7 @@ export interface ProjectFile {
     template: string;
     templateReplace: { [key: string]: string };
     background: string[];
+    content: string;
 }
 
 export interface ProjectBackground {
@@ -112,11 +115,14 @@ export class Project {
     @observable
     dirty: boolean;
 
-    @observable
+    @observable.array
     background: ProjectBackground[] = [];
 
+    @observable.deep
+    templateReplace: { [key: string]: string };
+
     @observable
-    templateReplace: Map<string, string> = new Map<string, string>();
+    content: string;
 
     constructor(name: string, template: Template, filename: string | undefined = undefined, file: ProjectFile | undefined = undefined) {
         this.name = name;
@@ -127,13 +133,16 @@ export class Project {
         if (file !== undefined) {
             this.filename = filename;
 
-            for (const key of Object.keys(file.templateReplace))
-                this.templateReplace.set(key, file.templateReplace[key]);
-
+            this.templateReplace = { ...file.templateReplace };
             this.initializeBackground(...file.background);
+
+            this.content = file.content;
         } else {
+            this.templateReplace = {};
             for (const key of Object.keys(template.htmlReplace))
-                this.templateReplace.set(key, template.htmlReplace[key].default);
+                this.templateReplace[key] = template.htmlReplace[key].default;
+
+            this.content = "";
         }
     }
 
@@ -142,7 +151,7 @@ export class Project {
         this.dirty = false;
     }
 
-    
+
     async addBackgroundAsync(...fullPath: string[]) {
         for (const item of fullPath) {
             // Use unix path for `relativePath`
@@ -152,17 +161,20 @@ export class Project {
                 relativePath = path.relative(this.filename, item).replace(/\\/g, "/");
 
             const size = await sizeOfAsync(item);
-
-            this.background.push({
+            const temp = {
                 path: item,
                 relativePath,
                 ...size
-            });
+            };
+
+            this.background.push(temp);
         }
     }
 
+    @action
     reorderBackground(oldIndex: number, newIndex: number) {
-        
+        const splice = this.background.splice(oldIndex, 1);
+        this.background.splice(newIndex, 0, splice[0]);
     }
 
     async saveAsync(filename: string) {
@@ -193,23 +205,19 @@ export class Project {
         const content = await this.buildAsync(false);
         await fs.writeFile(path.resolve(this.assetsPath, this.template.htmlName), content);
 
-        // Convert replace
-        let replace: any = {};
-        for (const [key, value] of this.templateReplace)
-            replace[key] = value;
-
         const file: ProjectFile = {
             name: this.name,
             template: `${this.template.category}/${this.template.name}`,
             background: this.background.map(item => item.relativePath as string),
-            templateReplace: replace
+            templateReplace: this.templateReplace,
+            content: this.content,
         }
 
         // Save
         await fs.writeJson(filename, file, { spaces: 4 });
     }
 
-    async buildAsync(preview: boolean): Promise<string> {
+    async buildAsync(preview: boolean) {
         function fileUrl(file: string) {
             var pathName = path.resolve(file).replace(/\\/g, '/');
 
@@ -229,7 +237,7 @@ export class Project {
             if (replace.buildOnly && preview)
                 continue;
 
-            const value = this.templateReplace.get(key) as string;
+            const value = this.templateReplace[key];
             if (replace.match !== undefined)
                 result = result.replace(new RegExp(replace.match, "g"), match => match.replace(new RegExp(replace.replace, "g"), value));
             else
@@ -266,7 +274,8 @@ height: ${height + "px"};
         // for (const item of this.background)
         //     background.push(`<img src="${item}">`);
 
-        result = result.replace("{{CONTENT}}", "");
+        if (template.contentReplace)
+            result = result.replace(template.contentReplace, this.content);
 
         if (template.customScript !== undefined) {
             const build = (global as any).require(template.customScript);
@@ -285,4 +294,8 @@ height: ${height + "px"};
 
         return result;
     }
+}
+
+export interface ProjectProps {
+    project: Project;
 }

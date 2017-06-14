@@ -100,10 +100,11 @@ aside > header > .actions > .action {
 .template:hover {
   background-color: #2a2d2e;
 }
-.template .highlight {
+.template.highlight {
   background-color: #3f3f46;
 }
 .preview > header {
+  display: flex;
   height: 36px;
   line-height: 36px;
 }

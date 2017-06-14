@@ -29,6 +29,7 @@
             "buildOnly": true
         }
     },
+    "contentReplace": "{{CONTENT}}",
     "background": "css",
     "backgroundReplace": "/*{{BACKGROUND}}*/"
 }

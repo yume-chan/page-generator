@@ -54,7 +54,7 @@ export class TextArea extends React.Component<TextAreaProps, void> {
 
         return (
             <div className="wrapper">
-                <textarea onInput={e=>this.props.onChange(e.currentTarget.value)}
+                <textarea onInput={e => this.props.onChange(e.currentTarget.value)}
                     style={{ height: this.height + "px" }}
                     placeholder={this.props.placeholder}
                     defaultValue={this.props.value}

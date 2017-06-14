@@ -86,15 +86,15 @@ export class App extends React.Component<{}, void> {
     }
 
     @bind
-    private onCreate(name: string, template: Template) {
-        this.project = new Project(name, template);
+    private onOpen(project: Project) {
+        this.project = project;
         this.preview = undefined;
     }
 
     @bind
     private onReplaceChange(key: string, value: string) {
         if (this.project !== undefined) {
-            this.project.templateReplace.set(key, value);
+            this.project.templateReplace[key] = value;
             this.project.dirty = true;
         }
     };
@@ -105,7 +105,7 @@ export class App extends React.Component<{}, void> {
     }
 
     render() {
-        const startPanel = this.project !== undefined ? <Editor project={this.project} onReplaceChange={this.onReplaceChange} /> : <Welcome onOpen={project => this.project = project} onPreview={project => this.preview = project} />;
+        const startPanel = this.project !== undefined ? <Editor project={this.project} onReplaceChange={this.onReplaceChange} /> : <Welcome onOpen={this.onOpen} onPreview={project => this.preview = project} />;
 
         const project = this.project || this.preview;
         const mainElement = project !== undefined ? <Preview project={project} onClose={this.onClose} isVirtual={this.project === undefined} /> : <div />;

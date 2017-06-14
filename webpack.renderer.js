@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const extractLess = new ExtractTextPlugin({
@@ -63,10 +65,21 @@ module.exports = {
     },
 
     target: "electron-renderer",
+    node: {
+        __filename: true,
+        __dirname: true
+    },
 
     plugins: [
         extractLess,
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.NamedModulesPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
+        new CopyWebpackPlugin([
+            {
+                from: 'node_modules/monaco-editor/dev/vs',
+                to: 'vs',
+            }
+        ])
     ],
 
     devServer: {

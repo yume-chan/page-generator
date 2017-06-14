@@ -1,37 +1,31 @@
-export type FunctionRef = (() => void | Promise<void>) & { ref?: WeakMap<object, (string)[]> }
+import { FunctionRef, wrap as actionWrap } from "./action";
+import { hasOwnProperty } from "./observer";
 
 export const run: Set<FunctionRef> = new Set<any>();
 
-function wrap(value: FunctionRef): () => void | Promise<void> {
-    return function (this: object) {
-        let sync = true;
+function wrap(value: FunctionRef): FunctionRef {
+    const wrapper: FunctionRef = actionWrap(function (this: object) {
         try {
             const size = run.size;
-            run.add(value);
+            run.add(wrapper);
 
             // Already in the set, don't track this call.
             if (size == run.size)
                 return;
 
-            value.ref = new WeakMap<object, (string)[]>();
+            wrapper.ref = new WeakMap<object, (string)[]>();
+            wrapper.value = value;
+            value.ref = wrapper.ref;
             const retval = value.apply(this);
-            if (retval instanceof Promise) {
-                sync = false;
-                function then(err: any) {
-                    run.delete(value);
-
-                    if (err)
-                        throw err;
-                }
-                return retval.then(then, then);
-            }
+            if (retval instanceof Promise && process.env.NODE_ENV != "production")
+                console.warn("Don't decorate an async function with @autorun.");
             return retval;
         }
         finally {
-            if (sync)
-                run.delete(value);
+            run.delete(wrapper);
         }
-    };
+    }) as FunctionRef;
+    return wrapper;
 }
 
 interface autorun {
@@ -42,12 +36,18 @@ interface autorun {
 export const autorun: autorun = function <T extends TypedPropertyDescriptor<FunctionRef>>(target: object, targetKey: string, descriptor: T): T {
     const value = descriptor.value;
     if (value !== undefined) {
-        descriptor.value = wrap(value);
+        descriptor = {
+            get(this: object) {
+                if (!hasOwnProperty(this, targetKey))
+                    Object.defineProperty(this, targetKey, { value: wrap(value.bind(this)) });
+                return (this as any)[targetKey] as T;
+            }
+        } as any;
     } else {
         const get = descriptor.get!;
         descriptor.get = function (this: object) {
             const value: FunctionRef = get.apply(this);
-            return wrap(value);
+            return wrap(value).bind(this);
         }
     }
 

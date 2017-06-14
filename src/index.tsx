@@ -19,5 +19,7 @@ function render(App: any) {
 render(App);
 
 const hot = (module as any).hot;
-if (hot)
-    hot.accept('./components/app', () => { render(App) })
+if (hot) {
+    // Hot Module Replacement needs *full path* and *extension*
+    hot.accept('./src/components/app.tsx', () => { render(App) })
+}

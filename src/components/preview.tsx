@@ -11,6 +11,8 @@ import bind from "bind-decorator";
 import { observable, observer, autorun } from "../object-proxy";
 
 import { Project } from "./project";
+import { Code } from "./code";
+import { DockPanel } from "./dock-panel";
 import "./preview.less";
 
 declare global {
@@ -21,7 +23,7 @@ declare global {
     }
 }
 
-export interface EditorProps {
+export interface PreviewProps {
     project: Project;
     isVirtual: boolean;
     style?: React.CSSProperties;
@@ -29,11 +31,20 @@ export interface EditorProps {
 }
 
 @observer
-export class Preview extends React.Component<EditorProps, void> {
+export class Preview extends React.Component<PreviewProps, void> {
+    @observable
+    private project: Project;
+
     private webview: Electron.WebviewTag | undefined;
 
+    constructor(props: PreviewProps) {
+        super(props);
+
+        this.project = props.project;
+    }
+
     @observable
-    private content: string = "";
+    private content: string;
 
     @bind
     private onWebviewRef(e: Electron.WebviewTag) {
@@ -42,8 +53,6 @@ export class Preview extends React.Component<EditorProps, void> {
             return;
         }
 
-        this.computeContentAsync();
-
         this.webview = e;
         this.webview.httpreferrer = this.props.project.uri;
         this.webview.disablewebsecurity = "true";
@@ -51,12 +60,25 @@ export class Preview extends React.Component<EditorProps, void> {
             if (this.webview !== undefined)
                 this.webview.openDevTools();
         });
+
+        this.computeContent();
+    }
+
+    shouldComponentUpdate(nextProps: PreviewProps) {
+        if (this.project !== nextProps.project) {
+            this.project = nextProps.project;
+            return false;
+        }
+        return true;
     }
 
     @autorun
-    @bind
-    private async computeContentAsync() {
-        this.content = await this.props.project.buildAsync(true);
+    private computeContent() {
+        const core = async (project: Project) => {
+            this.content = await project.buildAsync(true);
+        };
+
+        core(this.project);
     }
 
     @bind
@@ -84,25 +106,34 @@ export class Preview extends React.Component<EditorProps, void> {
     }
 
     render() {
-        const project = this.props.project;
+        const { project, isVirtual } = this.props;
         const template = project.template;
 
-        return (
+        const main = (
             <div className="preview" style={this.props.style}>
                 <header>
                     <div className="url-bar">
                         <span>{template.uri.replace(template.uriReplace, project.name) + template.htmlName}</span>
                     </div>
-                    {this.props.isVirtual || (
+                    {isVirtual || (
                         <div className="actions">
                             <div className="action icon-saveall" title="Save" onClick={this.save}></div>
                             <div className="action icon-close" title="Close" onClick={this.props.onClose}></div>
                         </div>
                     )}
                 </header>
+                {this.content !== undefined}
                 <webview ref={this.onWebviewRef}
                     src={"data:text/html; charset=utf-8," + encodeURIComponent(this.content)} />
             </div>
         );
+
+        if (isVirtual) {
+            return main;
+        } else {
+            return (
+                <DockPanel style={this.props.style} orientation="vertical" mainElement={main} endPanel={<Code project={project} />} endPanelSize={300} endPanelMaxSize={500} />
+            );
+        }
     }
 }

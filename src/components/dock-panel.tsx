@@ -90,9 +90,9 @@ export class Separator extends React.Component<SeparatorProps, void> {
 
                     style.height = this.props.width + "px";
                     if (this.props.start)
-                        style.top = this.props.width + "px";
+                        style.top = this.props.value + "px";
                     else
-                        style.bottom = this.props.width + "px";
+                        style.bottom = this.props.value + "px";
                     break;
             }
 
@@ -118,6 +118,8 @@ export interface DockPanelProps {
     endPanelMaxSize?: number;
 
     separatorWidth?: number;
+
+    style?: React.CSSProperties;
 }
 
 @observer
@@ -157,7 +159,7 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
 
         let { orientation, startPanel, mainElement, endPanel } = this.props;
 
-        const mainElementStyle = {} as any;
+        const mainElementStyle: React.CSSProperties = {};
         mainElement = React.cloneElement(mainElement, { style: mainElementStyle, key: "2" });
 
         mainElementStyle.position = "absolute";
@@ -168,7 +170,7 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 mainElementStyle.bottom = "0";
 
                 if (startPanel !== undefined) {
-                    const startPanelStyle = {} as any;
+                    const startPanelStyle: React.CSSProperties = {};
                     startPanel = React.cloneElement(startPanel, { style: startPanelStyle, key: "0" });
 
                     startPanelStyle.position = "absolute";
@@ -207,7 +209,7 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                             width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
 
-                    const endPanelStyle = {} as any;
+                    const endPanelStyle: React.CSSProperties = {};
                     endPanel = React.cloneElement(endPanel, { style: endPanelStyle, key: "4" });
 
                     endPanelStyle.position = "absolute";
@@ -228,7 +230,7 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 mainElementStyle.left = "0";
 
                 if (startPanel !== undefined && this.startPanelSize !== undefined) {
-                    const startPanelStyle = {} as any;
+                    const startPanelStyle: React.CSSProperties = {};
                     startPanel = React.cloneElement(startPanel, { style: startPanelStyle, key: "0" });
 
                     startPanelStyle.position = "absolute";
@@ -267,14 +269,14 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                             width={this.separatorWidth}
                             onValueUpdated={this.onEndPanelSizeChanged} />);
 
-                    const endPanelStyle = {} as any;
+                    const endPanelStyle: React.CSSProperties = {};
                     endPanel = React.cloneElement(endPanel, { style: endPanelStyle, key: "4" });
 
                     endPanelStyle.position = "absolute";
-                    endPanelStyle.top = "0";
                     endPanelStyle.right = "0";
                     endPanelStyle.bottom = "0";
-                    endPanelStyle.width = this.endPanelSize + "px";
+                    endPanelStyle.left = "0";
+                    endPanelStyle.height = this.endPanelSize + "px";
 
                     mainElementStyle.bottom = this.endPanelSize + this.separatorWidth + "px";
 
@@ -285,6 +287,6 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 break;
         }
 
-        return <div id={this.props.id}>{list}</div>
+        return <div id={this.props.id} style={this.props.style}>{list}</div>
     }
 }

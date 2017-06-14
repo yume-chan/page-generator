@@ -301,15 +301,22 @@ module.exports = require("url");
 
 /***/ }),
 /* 6 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_electron__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_electron___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_electron__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_electron_window_state__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_electron_window_state___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_electron_window_state__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_path__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_path___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_path__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_url__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-const electron_1 = __webpack_require__(2);
-const windowStateKeeper = __webpack_require__(4);
-const path = __webpack_require__(1);
-const url = __webpack_require__(5);
+
+
+
 const menu = [
     {
         label: "File",
@@ -340,18 +347,18 @@ const menu = [
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 function createWindow() {
-    electron_1.BrowserWindow.addDevToolsExtension("./react-dev-tools/");
-    const mainWindowState = new windowStateKeeper();
+    __WEBPACK_IMPORTED_MODULE_0_electron__["BrowserWindow"].addDevToolsExtension("./react-dev-tools/");
+    const mainWindowState = new __WEBPACK_IMPORTED_MODULE_1_electron_window_state__();
     // Create the browser window.
-    win = new electron_1.BrowserWindow({
+    win = new __WEBPACK_IMPORTED_MODULE_0_electron__["BrowserWindow"]({
         x: mainWindowState.x,
         y: mainWindowState.y,
         width: mainWindowState.width,
         height: mainWindowState.height
     });
     if (process.env.NODE_ENV == "production") {
-        win.loadURL(url.format({
-            pathname: path.join(__dirname, "index.html"),
+        win.loadURL(__WEBPACK_IMPORTED_MODULE_3_url__["format"]({
+            pathname: __WEBPACK_IMPORTED_MODULE_2_path__["join"](__dirname, "index.html"),
             protocol: "file:",
             slashes: true,
         }));
@@ -372,21 +379,21 @@ function createWindow() {
         // when you should delete the corresponding element.
         win = null;
     });
-    electron_1.Menu.setApplicationMenu(electron_1.Menu.buildFromTemplate(menu));
+    __WEBPACK_IMPORTED_MODULE_0_electron__["Menu"].setApplicationMenu(__WEBPACK_IMPORTED_MODULE_0_electron__["Menu"].buildFromTemplate(menu));
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-electron_1.app.on("ready", createWindow);
+__WEBPACK_IMPORTED_MODULE_0_electron__["app"].on("ready", createWindow);
 // Quit when all windows are closed.
-electron_1.app.on("window-all-closed", () => {
+__WEBPACK_IMPORTED_MODULE_0_electron__["app"].on("window-all-closed", () => {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== "darwin") {
-        electron_1.app.quit();
+        __WEBPACK_IMPORTED_MODULE_0_electron__["app"].quit();
     }
 });
-electron_1.app.on("activate", () => {
+__WEBPACK_IMPORTED_MODULE_0_electron__["app"].on("activate", () => {
     // On macOS it"s common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
