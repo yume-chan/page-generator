@@ -1,27 +1,18 @@
 import * as path from "path";
 
-import * as electron from "electron";
-import { remote } from "electron";
-const { dialog, Menu, MenuItem } = remote;
-
 import * as React from "react";
+import * as webview from "webview";
 
 import bind from "bind-decorator";
 
-import { observable, observer, autorun } from "../object-proxy";
+import { autorun, observable, observer } from "../object-proxy";
 
-import { Project } from "./project";
+import { showSaveDialog } from "../dialog";
 import { Code } from "./code";
 import { DockPanel } from "./dock-panel";
-import "./preview.less";
+import { Project } from "./project";
 
-declare global {
-    namespace JSX {
-        interface IntrinsicElements {
-            webview: React.HTMLProps<Electron.WebviewTag>;
-        }
-    }
-}
+import "./preview.less";
 
 export interface PreviewProps {
     project: Project;
@@ -35,7 +26,12 @@ export class Preview extends React.Component<PreviewProps, void> {
     @observable
     private project: Project;
 
+    @observable
+    private content: string;
+
     private webview: Electron.WebviewTag | undefined;
+    private webviewLoaded: boolean = false;
+    private devToolsOpen: boolean = false;
 
     constructor(props: PreviewProps) {
         super(props);
@@ -43,28 +39,7 @@ export class Preview extends React.Component<PreviewProps, void> {
         this.project = props.project;
     }
 
-    @observable
-    private content: string;
-
-    @bind
-    private onWebviewRef(e: Electron.WebviewTag) {
-        if (e === null) {
-            this.webview = undefined;
-            return;
-        }
-
-        this.webview = e;
-        this.webview.httpreferrer = this.props.project.uri;
-        this.webview.disablewebsecurity = "true";
-        this.webview.addEventListener("dom-ready", () => {
-            if (this.webview !== undefined)
-                this.webview.openDevTools();
-        });
-
-        this.computeContent();
-    }
-
-    shouldComponentUpdate(nextProps: PreviewProps) {
+    public shouldComponentUpdate(nextProps: PreviewProps) {
         if (this.project !== nextProps.project) {
             this.project = nextProps.project;
             return false;
@@ -72,40 +47,7 @@ export class Preview extends React.Component<PreviewProps, void> {
         return true;
     }
 
-    @autorun
-    private computeContent() {
-        const core = async (project: Project) => {
-            this.content = await project.buildAsync(true);
-        };
-
-        core(this.project);
-    }
-
-    @bind
-    private async save() {
-        // Make a local copy to make TypeScript happy.
-        // Or `project` will be `Project | undefined` again in
-        // async callback.
-        const project = this.props.project;
-
-        if (project === undefined)
-            return;
-
-        if (project.filename === undefined) {
-            dialog.showSaveDialog(remote.getCurrentWindow(), {
-                defaultPath: project.name + ".json",
-            }, async filename => {
-                if (filename === undefined)
-                    return;
-
-                await project.saveAsync(filename);
-            });
-        } else {
-            await project.saveAsync(project.filename);
-        }
-    }
-
-    render() {
+    public render() {
         const { project, isVirtual } = this.props;
         const template = project.template;
 
@@ -117,6 +59,7 @@ export class Preview extends React.Component<PreviewProps, void> {
                     </div>
                     {isVirtual || (
                         <div className="actions">
+                            <div className="action icon-open-change" title="Open DevTools" onClick={this.openDevTools}></div>
                             <div className="action icon-saveall" title="Save" onClick={this.save}></div>
                             <div className="action icon-close" title="Close" onClick={this.props.onClose}></div>
                         </div>
@@ -134,6 +77,67 @@ export class Preview extends React.Component<PreviewProps, void> {
             return (
                 <DockPanel style={this.props.style} orientation="vertical" mainElement={main} endPanel={<Code project={project} />} endPanelSize={300} endPanelMaxSize={500} />
             );
+        }
+    }
+
+    @bind
+    private onWebviewRef(e: Electron.WebviewTag) {
+        if (e === null) {
+            this.webview = undefined;
+            return;
+        }
+
+        this.webview = e;
+        this.webview.httpreferrer = this.props.project.uri;
+        this.webview.disablewebsecurity = "true";
+        this.webview.addEventListener("dom-ready", () => {
+            if (this.devToolsOpen) {
+                this.webview!.openDevTools();
+                this.devToolsOpen = false;
+            }
+            this.webviewLoaded = true;
+        });
+
+        this.computeContent();
+    }
+
+    @autorun
+    private computeContent() {
+        const core = async (project: Project) => {
+            this.content = await project.buildAsync(true);
+        };
+
+        core(this.project);
+    }
+
+    @bind
+    private openDevTools() {
+        if (this.webviewLoaded)
+            this.webview!.openDevTools();
+        else
+            this.devToolsOpen = true;
+    }
+
+    @bind
+    private async save() {
+        // Make a local copy to make TypeScript happy.
+        // Or `project` will be `Project | undefined` again in async callback.
+        const project = this.props.project;
+
+        if (project === undefined)
+            return;
+
+        if (project.filename === undefined) {
+            showSaveDialog({
+                defaultPath: project.name + ".json",
+            }, async (filename) => {
+                if (filename === undefined)
+                    return;
+
+                await project.saveAsync(filename);
+            });
+        } else {
+            await project.saveAsync(project.filename);
         }
     }
 }

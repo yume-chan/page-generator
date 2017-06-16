@@ -1,1 +1,0 @@
-{"version":3,"file":"observable.js","sourceRoot":"","sources":["../../src/object-proxy/observable.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,GAAG,EAAE,MAAM,kBAAkB,CAAC;AACvC,OAAO,EAAE,KAAK,EAAE,MAAM,oBAAoB,CAAC;AAC3C,OAAO,EAAE,IAAI,EAAE,MAAM,mBAAmB,CAAC;AAazC,MAAM,CAAC,MAAM,UAAU,GAAe,MAAM,CAAC,MAAM,CAAC,GAAG,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC"}

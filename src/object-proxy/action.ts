@@ -1,12 +1,13 @@
 type NoReturn = () => void | Promise<void>;
 export type FunctionRef = NoReturn & {
-    ref?: WeakMap<object, (string)[]>;
+    ref?: WeakMap<object, string[]>;
     value?: NoReturn;
-}
+};
 
 export let suppress: { value: boolean } = { value: false };
 export const pending: Set<FunctionRef> = new Set<any>();
 
+/* tslint:disable:ban-types */
 export function wrap(value: Function): Function {
     return function (this: object) {
         const old = suppress.value;
@@ -23,11 +24,10 @@ export function wrap(value: Function): Function {
         suppress.value = true;
         try {
             const retval = value.apply(this, arguments);
-            if (retval instanceof Promise && process.env.NODE_ENV != "production")
+            if (retval instanceof Promise && process.env.NODE_ENV !== "production")
                 console.warn("Don't decorate an async function with @action.");
             return retval;
-        }
-        finally {
+        } finally {
             then();
         }
     };
@@ -40,10 +40,10 @@ export function action<T extends Function>(target: object, targetKey: string, de
     } else {
         const get = descriptor.get!;
         descriptor.get = function (this: object) {
-            const value: FunctionRef = get.apply(this);
-            return wrap(value) as T;
-        }
+            return wrap(get.apply(this)) as T;
+        };
     }
 
     return descriptor;
 }
+/* tslint:enable:ban-types */

@@ -1,9 +1,8 @@
+import { FunctionRef, pending, suppress } from "./action";
 import { run } from "./autorun";
-import { suppress, pending, FunctionRef } from "./action";
 
 const reaction: WeakMap<object, { [key: string]: Set<FunctionRef> }> = new WeakMap<any, any>();
 const read: WeakMap<object, { [key: string]: boolean }> = new WeakMap<any, any>();
-// const store: WeakMap<object, { [key: string]: any }> = new WeakMap<any, any>();
 
 export function onGet(scope: object, propertyKey: string) {
     const r = read.get(scope);
@@ -50,7 +49,7 @@ export function onSet(scope: object, propertyKey: string) {
     let count = 1;
     function then(err?: any) {
         count--;
-        if (count == 0 && !read.get(scope)![propertyKey])
+        if (count === 0 && !read.get(scope)![propertyKey])
             reaction.delete(scope);
 
         if (err)
@@ -61,7 +60,7 @@ export function onSet(scope: object, propertyKey: string) {
         for (const method of run) {
             const ref = method.ref!.get(scope);
             if (ref !== undefined && ref.includes(propertyKey))
-                throw "Cannot modify an observed value in autorun";
+                throw new TypeError("Cannot modify an observed value in autorun");
         }
 
         for (const item of new Set(list)) {
@@ -74,21 +73,20 @@ export function onSet(scope: object, propertyKey: string) {
 
         then();
     } else {
-        for (const item of new Set(list)) {
+        for (const item of new Set(list))
             pending.add(item);
-        }
     }
 }
 
 export function wrap(beforeSet: (value: any) => any) {
-    return function <T>(target: object, propertyKey: string, descriptor?: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> {
+    return function <T>(this: undefined, target: object, propertyKey: string, descriptor?: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> {
         if (descriptor !== undefined) {
             const get = descriptor.get;
             if (get !== undefined) {
                 descriptor.get = function (this: object) {
                     onGet(this, propertyKey);
                     return get.call(this);
-                }
+                };
             }
 
             const set = descriptor.set;
@@ -96,36 +94,33 @@ export function wrap(beforeSet: (value: any) => any) {
                 descriptor.set = function (this: object, v: any) {
                     set.call(this, beforeSet(v));
                     onSet(this, propertyKey);
-                }
+                };
             }
         } else {
             descriptor = {
                 configurable: false,
                 enumerable: true,
-                get: function (this: object) {
+                get(this: object) {
                     onGet(this, propertyKey);
-                    // const object = store.get(this);
                     const object = (this as any).$store;
                     if (object !== undefined)
                         return object[propertyKey];
                     else
                         return undefined;
                 },
-                set: function (this: object, v: any) {
+                set(this: object, v: any) {
                     const value = beforeSet(v);
-                    // const object = store.get(this);
                     const object = (this as any).$store;
                     if (object !== undefined)
                         object[propertyKey] = value;
                     else
-                        // store.set(this, { [propertyKey]: value });
                         (this as any).$store = { [propertyKey]: value };
                     onSet(this, propertyKey);
-                }
+                },
             };
         }
         return descriptor;
-    }
+    };
 }
 
-export const ref = wrap(v => v);
+export const ref = wrap((v) => v);

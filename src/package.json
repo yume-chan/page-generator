@@ -1,0 +1,10 @@
+{
+  "name": "page-generator",
+  "productName": "Page Generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "keywords": [],
+  "author": "",
+  "private": true
+}

@@ -1,6 +1,6 @@
-import { ref } from "./observable.ref";
 import { array } from "./observable.array";
 import { deep } from "./observable.deep";
+import { ref } from "./observable.ref";
 
 interface Observable {
     (target: any, propertyKey: string): void;

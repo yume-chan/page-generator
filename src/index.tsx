@@ -13,7 +13,7 @@ function render(App: any) {
                 <App />
             </AppContainer>
         </div>,
-        document.getElementById("app-container")
+        document.getElementById("app-container"),
     );
 }
 render(App);
@@ -21,5 +21,5 @@ render(App);
 const hot = (module as any).hot;
 if (hot) {
     // Hot Module Replacement needs *full path* and *extension*
-    hot.accept('./src/components/app.tsx', () => { render(App) })
+    hot.accept("./src/components/app.tsx", () => { render(App); });
 }

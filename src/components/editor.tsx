@@ -1,20 +1,17 @@
 import * as path from "path";
 
-import * as electron from "electron";
-import { remote } from "electron";
-const { dialog, Menu, MenuItem } = remote;
-
 import * as React from "react";
 
 import bind from "bind-decorator";
 
 import { observable, observer, ReactProps } from "../object-proxy";
 
-import { PanelAction, Panel } from "./panel";
-import { TextArea } from "./text-area";
-import { Project } from "./project";
-import { Expendable } from "./expendable";
+import { showOpenDialog } from "../dialog";
 import { BackgroundList } from "./background-list";
+import { Expendable } from "./expendable";
+import { Panel, PanelAction } from "./panel";
+import { Project } from "./project";
+import { TextArea } from "./text-area";
 
 export interface EditorProps {
     project: Project;
@@ -24,39 +21,39 @@ export interface EditorProps {
 
 @observer
 export class Editor extends React.Component<EditorProps, void> {
-    render() {
+    public render() {
         const actions: PanelAction[] = [
             {
                 className: "icon-new",
                 onClick: () => {
-                    dialog.showOpenDialog(remote.getCurrentWindow(), {
-                        properties: ["openFile", "multiSelections"],
+                    showOpenDialog({
                         filters: [
                             {
+                                extensions: ["png", "jpg"],
                                 name: "Image",
-                                extensions: ["png", "jpg"]
-                            }
-                        ]
-                    }, async files => {
+                            },
+                        ],
+                        properties: ["openFile", "multiSelections"],
+                    }, async (files) => {
                         if (files === undefined)
                             return;
 
                         await this.props.project.addBackgroundAsync(...files);
                     });
-                }
-            }
+                },
+            },
         ];
 
+        const ReplaceInput = observer(({ name, replaces }: ReactProps<{ name: string, replaces: { [key: string]: string } }>) => (
+            <div>
+                <h4>{name}</h4>
+                <TextArea onChange={(value) => this.props.onReplaceChange(name, value)} value={replaces[name]} />
+            </div>
+        ));
+
         const Replaces = observer(({ replaces }: ReactProps<{ replaces: { [key: string]: string } }>) => {
-            const ReplaceInput = observer(({ name, replaces }: ReactProps<{ name: string, replaces: { [key: string]: string } }>) => (
-                <div>
-                    <h4>{name}</h4>
-                    <TextArea onChange={(value) => this.props.onReplaceChange(name, value)} value={replaces[name]} />
-                </div>
-            ));
 
             const children: JSX.Element[] = [];
-            // for (const [key, value] of replaces)
             for (const key of Object.keys(replaces))
                 children.push(<ReplaceInput key={key} name={key} replaces={replaces} />);
 

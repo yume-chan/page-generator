@@ -2,20 +2,12 @@
 
 declare const amdRequire: any;
 
-import * as path from "path";
-
 import * as React from "react";
 
 import { bind } from "bind-decorator";
 
-import { Project, ProjectProps } from "./project";
 import { observable } from "../object-proxy";
-
-function enableEmmet(editor: monaco.editor.IStandaloneCodeEditor) {
-    editor.addCommand(monaco.KeyCode.Tab, function() {
-
-    }, "");
-}
+import { ProjectProps } from "./project";
 
 interface CodeProps {
     style?: React.CSSProperties;
@@ -24,7 +16,7 @@ interface CodeProps {
 export class Code extends React.Component<CodeProps & ProjectProps, void> {
     @observable
     private value: string;
-    private editor: monaco.editor.IStandaloneCodeEditor;
+    private editor: monaco.editor.IStandaloneCodeEditor | undefined;
 
     constructor(props: CodeProps & ProjectProps) {
         super(props);
@@ -32,46 +24,63 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
         this.value = props.project.content;
     }
 
-    @bind
-    private onDivRef(ref: HTMLDivElement) {
-        if (ref === null) {
-            if (this.editor !== undefined)
-                this.editor.dispose();
-            return;
-        }
-
-        amdRequire(["vs/editor/editor.main"], () => {
-            this.editor = monaco.editor.create(ref, {
-                language: "html",
-                value: this.props.project.content,
-                theme: "vs-dark"
-            });
-            this.editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent2) => {
-                this.context = this.editor.getValue();
-                this.props.project.content = this.context;
-            });
-        });
+    public componentDidMount() {
+        addEventListener("resize", this.onResize);
     }
 
-    shouldComponentUpdate(nextProps: CodeProps & ProjectProps): boolean {
-        if (this.context != nextProps.project.content) {
+    public shouldComponentUpdate(nextProps: CodeProps & ProjectProps): boolean {
+        if (this.value !== nextProps.project.content) {
             if (this.editor !== undefined)
                 this.editor.setValue(nextProps.project.content);
-            this.context = nextProps.project.content;
+            this.value = nextProps.project.content;
             return false;
         }
 
         return true;
     }
 
-    componentDidUpdate() {
+    public componentDidUpdate() {
         if (this.editor !== undefined)
             this.editor.layout();
     }
 
-    render() {
+    public componentWillUnmount() {
+        removeEventListener("resize", this.onResize);
+    }
+
+    public render() {
         return (
             <div style={this.props.style} ref={this.onDivRef} />
-        )
+        );
+    }
+
+    @bind
+    private onResize() {
+        if (this.editor !== undefined)
+            this.editor.layout();
+    }
+
+    @bind
+    private onDivRef(ref: HTMLDivElement) {
+        if (ref === null) {
+            if (this.editor !== undefined) {
+                this.editor.dispose();
+                this.editor = undefined;
+            }
+            return;
+        }
+
+        amdRequire(["vs/editor/editor.main"], () => {
+            const editor = monaco.editor.create(ref, {
+                language: "html",
+                theme: "vs-dark",
+                value: this.props.project.content,
+            });
+            editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent2) => {
+                this.value = editor.getValue();
+                this.props.project.content = this.value;
+            });
+            this.editor = editor;
+        });
     }
 }

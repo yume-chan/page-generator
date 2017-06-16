@@ -1,0 +1,4 @@
+{
+    "insertSpaceBeforeFunctionParenthesis": false,
+    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false
+}

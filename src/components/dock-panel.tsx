@@ -3,103 +3,7 @@ import * as React from "react";
 import bind from "bind-decorator";
 
 import { observable, observer } from "../object-proxy";
-
-export interface SeparatorProps {
-    orientation: "vertical" | "horizontal";
-    start: boolean;
-    value: number;
-    min?: number;
-    max?: number;
-    width: number;
-    onValueUpdated: (value: number) => void;
-}
-
-@observer
-export class Separator extends React.Component<SeparatorProps, void> {
-    private start: number = 0;
-    private origin: number = 0;
-
-    @observable
-    private dragging: boolean = false;
-
-    @bind
-    private onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        if (e.button == 0) {
-            e.preventDefault();
-
-            this.start = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
-            this.origin = this.props.value;
-            this.dragging = true;
-        }
-    }
-
-    @bind
-    private onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        const now = this.props.orientation == "horizontal" ? e.pageX : e.pageY;
-        const delta = this.props.start ? now - this.start : this.start - now;
-        const current = this.origin + delta;
-        if (this.props.min !== undefined && current < this.props.min)
-            return;
-        if (this.props.max != undefined && current > this.props.max)
-            return;
-        this.props.onValueUpdated(current);
-    }
-
-    @bind
-    private onMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        if (e.button == 0)
-            this.dragging = false;
-    }
-
-    render() {
-        const style = {} as any;
-        style.position = "absolute";
-
-        switch (this.props.orientation) {
-            case "horizontal":
-                style.cursor = "ew-resize";
-                break;
-            case "vertical":
-                style.cursor = "ns-resize";
-                break;
-        }
-
-        if (this.dragging) {
-            return (
-                <div className="drag-overlay"
-                    style={style}
-                    onMouseMove={this.onMouseMove}
-                    onMouseUp={this.onMouseUp} />
-            );
-        }
-        else {
-            switch (this.props.orientation) {
-                case "horizontal":
-                    style.top = "0";
-                    style.bottom = "0";
-
-                    style.width = this.props.width + "px";
-                    if (this.props.start)
-                        style.left = this.props.value + "px";
-                    else
-                        style.right = this.props.value + "px";
-                    break;
-                case "vertical":
-                    style.right = "0";
-                    style.left = "0";
-
-                    style.height = this.props.width + "px";
-                    if (this.props.start)
-                        style.top = this.props.value + "px";
-                    else
-                        style.bottom = this.props.value + "px";
-                    break;
-            }
-
-            return <div className="separator" style={style} onMouseDown={this.onMouseDown} />;
-        }
-    }
-}
+import { Separator } from "./separator";
 
 export interface DockPanelProps {
     id?: string;
@@ -123,10 +27,13 @@ export interface DockPanelProps {
 }
 
 @observer
-export class DockPanel extends React.Component<DockPanelProps, void>{
-    @observable startPanelSize: number;
-    @observable endPanelSize: number;
-    separatorWidth: number;
+export class DockPanel extends React.Component<DockPanelProps, void> {
+    @observable
+    private startPanelSize: number;
+    @observable
+    private endPanelSize: number;
+
+    private separatorWidth: number;
 
     constructor(props: DockPanelProps) {
         super(props);
@@ -144,20 +51,11 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
         this.separatorWidth = props.separatorWidth || 6;
     }
 
-    @bind
-    onStartPanelSizeChanged(value: number) {
-        this.startPanelSize = value;
-    }
-
-    @bind
-    onEndPanelSizeChanged(value: number) {
-        this.endPanelSize = value;
-    }
-
-    render() {
+    public render() {
         const list = [];
 
-        let { orientation, startPanel, mainElement, endPanel } = this.props;
+        const { orientation } = this.props;
+        let { startPanel, mainElement, endPanel } = this.props;
 
         const mainElementStyle: React.CSSProperties = {};
         mainElement = React.cloneElement(mainElement, { style: mainElementStyle, key: "2" });
@@ -287,6 +185,16 @@ export class DockPanel extends React.Component<DockPanelProps, void>{
                 break;
         }
 
-        return <div id={this.props.id} style={this.props.style}>{list}</div>
+        return <div id={this.props.id} style={this.props.style}>{list}</div>;
+    }
+
+    @bind
+    private onStartPanelSizeChanged(value: number) {
+        this.startPanelSize = value;
+    }
+
+    @bind
+    private onEndPanelSizeChanged(value: number) {
+        this.endPanelSize = value;
     }
 }

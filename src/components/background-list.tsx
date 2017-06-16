@@ -1,44 +1,66 @@
 import * as path from "path";
 
 import * as React from "react";
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { SortableContainer, SortableElement } from "react-sortable-hoc";
 
-import { Project, ProjectBackground, ProjectProps } from "./project";
 import { observer } from "../object-proxy";
+import { Project, ProjectBackground, ProjectProps } from "./project";
 
-export function BackgroundList({ project }: { project: Project }) {
-    const SortableItem = SortableElement(({ item, index }: { item: ProjectBackground, index: number }) => {
-        let filepath = item.relativePath;
-        let sep = "/";
-        if (filepath === undefined) {
-            filepath = item.path;
-            sep = path.sep;
-        }
+import "./background-list.less";
 
-        const parsed = path.parse(filepath);
+interface ItemProps {
+    item: ProjectBackground;
+    index: number;
+    onDelete(index: number): void;
+}
 
-        return (
-            <div key={index} className="list-item">
-                <div className="path" title={item.path}>{parsed.dir}</div>
-                <div className="content" title={item.path}>{sep + parsed.base}</div>
-                <div className="actions">
-                    <div className="action icon-kill" onClick={e => project.background.splice(index, 1)}></div>
-                </div>
+const Content = SortableElement(({ item }: { item: ProjectBackground }) => {
+    let filepath = item.relativePath;
+    let sep = "/";
+    if (filepath === undefined) {
+        filepath = item.path;
+        sep = path.sep;
+    }
+
+    const parsed = path.parse(filepath);
+
+    return (
+        <div className="sortable-item">
+            <div className="path" title={item.path}>{parsed.dir}</div>
+            <div className="content" title={item.path}>{sep + parsed.base}</div>
+        </div>
+    );
+});
+
+const Item = ({ item, index, onDelete }: ItemProps) => {
+    return (
+        <div className="list-item">
+            <Content item={item} index={index} />
+            <div className="actions">
+                <div className="action icon-kill" onClick={onDelete.bind(undefined, index)}></div>
             </div>
-        );
-    });
+        </div>
+    );
+};
 
-    const Container = SortableContainer(observer(({ project }: ProjectProps) => (
+const Container = SortableContainer(observer(({ project }: ProjectProps) => {
+    function onDelete(index: number) {
+        project.background.splice(index, 1);
+    }
+
+    return (
         <div>
             {project.background.map((item, index) => (
-                <SortableItem key={item.path} item={item} index={index} />
+                <Item key={item.path} item={item} index={index} onDelete={onDelete} />
             ))}
         </div>
-    )));
+    );
+}));
 
+export function BackgroundList({ project }: ProjectProps) {
     const onSortEnd = ({ oldIndex, newIndex }: { oldIndex: number, newIndex: number }) => {
         project.reorderBackground(oldIndex, newIndex);
-    }
+    };
 
     return (
         <Container project={project} onSortEnd={onSortEnd} />

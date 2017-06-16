@@ -16,12 +16,12 @@ function createProxy(value: { [key: string]: any }): { [key: string]: any } {
 
             return true;
         },
-        // ownKeys(target: { [key: string]: any }): PropertyKey[] {
-        //     const keys = Object.keys(target);
-        //     for (const key of keys)
-        //         onGet(target, key);
-        //     return keys;
-        // }
+        ownKeys(target: { [key: string]: any }): PropertyKey[] {
+            const keys = Object.keys(target);
+            for (const key of keys)
+                onGet(target, key);
+            return keys;
+        },
     });
 }
 

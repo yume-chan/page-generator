@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "module": "es2015",
+        "moduleResolution": "node",
+        "outDir": "out",
+        "strict": true,
+        "target": "es2017",
+        "jsx": "react",
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "importHelpers": true,
+        "baseUrl": ".",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "paths": {
+            "*": [
+                "../typing/*"
+            ]
+        },
+        "plugins": [
+            {
+                "name": "tslint-language-service",
+                "ignoreDefinitionFiles": true
+            }
+        ]
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

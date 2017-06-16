@@ -2,7 +2,7 @@ import * as React from "react";
 
 import bind from "bind-decorator";
 
-import { observable, observer, autorun } from "../object-proxy";
+import { autorun, observable, observer } from "../object-proxy";
 
 import "./text-area.less";
 
@@ -23,38 +23,18 @@ export class TextArea extends React.Component<TextAreaProps, void> {
         super(props);
     }
 
-    updateLayout() {
-        if (this.mirror === null || this.mirror === undefined)
-            return;
-
-        const height = this.mirror.getBoundingClientRect().height;
-        if (height != this.height)
-            this.height = height;
-    }
-
-    @bind
-    onMirrorRef(e: HTMLDivElement) {
-        this.mirror = e;
+    public componentDidUpdate() {
         this.updateLayout();
     }
 
-    @bind
-    onInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-        this.props.onChange(e.target.value);
-    }
-
-    componentDidUpdate() {
-        this.updateLayout();
-    }
-
-    render() {
+    public render() {
         let mirrorValue = this.props.value;
         if (mirrorValue !== undefined && mirrorValue.endsWith("\n"))
             mirrorValue += " ";
 
         return (
             <div className="wrapper">
-                <textarea onInput={e => this.props.onChange(e.currentTarget.value)}
+                <textarea onInput={(e) => this.props.onChange(e.currentTarget.value)}
                     style={{ height: this.height + "px" }}
                     placeholder={this.props.placeholder}
                     defaultValue={this.props.value}
@@ -65,5 +45,25 @@ export class TextArea extends React.Component<TextAreaProps, void> {
                 <div className="mirror" ref={this.onMirrorRef}>{mirrorValue}</div>
             </div>
         );
+    }
+
+    private updateLayout() {
+        if (this.mirror === null || this.mirror === undefined)
+            return;
+
+        const height = this.mirror.getBoundingClientRect().height;
+        if (height !== this.height)
+            this.height = height;
+    }
+
+    @bind
+    private onMirrorRef(e: HTMLDivElement) {
+        this.mirror = e;
+        this.updateLayout();
+    }
+
+    @bind
+    private onInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        this.props.onChange(e.target.value);
     }
 }

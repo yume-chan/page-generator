@@ -1,11 +1,10 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import * as sizeOf from "image-size";
 import * as ejs from "ejs";
+import * as sizeOf from "image-size";
 
-import { observable, observer, autorun } from "../object-proxy";
-import { action } from "../object-proxy/";
+import { action, observable } from "../object-proxy";
 
 export interface TemplateReplace {
     readonly replace: string;
@@ -16,7 +15,7 @@ export interface TemplateReplace {
 
 export interface Template {
     readonly category: string;
-    readonly customScript?: string
+    readonly customScript?: string;
     readonly name: string;
     readonly uri: string;
     readonly uriReplace: string;
@@ -35,8 +34,8 @@ export interface TemplateCategory {
     templates: Template[];
 }
 
-export namespace Template {
-    export async function loadAsync(folder: string): Promise<TemplateCategory[]> {
+export const Template = {
+    async loadAsync(folder: string): Promise<TemplateCategory[]> {
         const result: TemplateCategory[] = [];
 
         for (const categoryName of await fs.readdir(folder)) {
@@ -45,7 +44,7 @@ export namespace Template {
                 const templates: Template[] = [];
                 const category: TemplateCategory = {
                     name: categoryName,
-                    templates
+                    templates,
                 };
                 result.push(category);
 
@@ -75,8 +74,8 @@ export namespace Template {
         }
 
         return result;
-    }
-}
+    },
+};
 
 interface ImageInfo {
     width: number;
@@ -105,26 +104,25 @@ export interface ProjectBackground {
 }
 
 export class Project {
-    readonly name: string;
-    readonly template: Template;
-    readonly uri: string;
-
-    filename: string | undefined;
-    assetsPath: string | undefined;
+    public readonly name: string;
+    public readonly template: Template;
+    public readonly uri: string;
+    public filename: string | undefined;
+    public assetsPath: string | undefined;
 
     @observable
-    dirty: boolean;
+    public content: string;
+
+    @observable
+    public dirty: boolean;
 
     @observable.array
-    background: ProjectBackground[] = [];
+    public background: ProjectBackground[] = [];
 
     @observable.deep
-    templateReplace: { [key: string]: string };
+    public templateReplace: { [key: string]: string };
 
-    @observable
-    content: string;
-
-    constructor(name: string, template: Template, filename: string | undefined = undefined, file: ProjectFile | undefined = undefined) {
+    constructor(name: string, template: Template, filename?: string, file?: ProjectFile) {
         this.name = name;
         this.template = template;
 
@@ -146,13 +144,8 @@ export class Project {
         }
     }
 
-    private async initializeBackground(...files: string[]) {
-        await this.addBackgroundAsync(...files.map(item => path.resolve(this.filename, item)));
-        this.dirty = false;
-    }
-
-
-    async addBackgroundAsync(...fullPath: string[]) {
+    public async addBackgroundAsync(...fullPath: string[]) {
+        const result: ProjectBackground[] = [];
         for (const item of fullPath) {
             // Use unix path for `relativePath`
             // It will later be used in css
@@ -164,20 +157,22 @@ export class Project {
             const temp = {
                 path: item,
                 relativePath,
-                ...size
+                ...size,
             };
 
-            this.background.push(temp);
+            result.push(temp);
         }
+
+        this.addBackgroundsCore(result);
     }
 
     @action
-    reorderBackground(oldIndex: number, newIndex: number) {
+    public reorderBackground(oldIndex: number, newIndex: number) {
         const splice = this.background.splice(oldIndex, 1);
         this.background.splice(newIndex, 0, splice[0]);
     }
 
-    async saveAsync(filename: string) {
+    public async saveAsync(filename: string) {
         this.filename = filename;
 
         const dirname = path.dirname(filename);
@@ -206,28 +201,27 @@ export class Project {
         await fs.writeFile(path.resolve(this.assetsPath, this.template.htmlName), content);
 
         const file: ProjectFile = {
+            background: this.background.map((item) => item.relativePath as string),
+            content: this.content,
             name: this.name,
             template: `${this.template.category}/${this.template.name}`,
-            background: this.background.map(item => item.relativePath as string),
             templateReplace: this.templateReplace,
-            content: this.content,
-        }
+        };
 
         // Save
         await fs.writeJson(filename, file, { spaces: 4 });
     }
 
-    async buildAsync(preview: boolean) {
+    public async buildAsync(preview: boolean): Promise<string> {
         function fileUrl(file: string) {
-            var pathName = path.resolve(file).replace(/\\/g, '/');
+            let pathName = path.resolve(file).replace(/\\/g, "/");
 
             // Windows drive letter must be prefixed with a slash
-            if (pathName[0] !== '/') {
-                pathName = '/' + pathName;
-            }
+            if (pathName[0] !== "/")
+                pathName = "/" + pathName;
 
-            return encodeURI('file://' + pathName);
-        };
+            return encodeURI("file://" + pathName);
+        }
 
         const template = this.template;
 
@@ -239,7 +233,7 @@ export class Project {
 
             const value = this.templateReplace[key];
             if (replace.match !== undefined)
-                result = result.replace(new RegExp(replace.match, "g"), match => match.replace(new RegExp(replace.replace, "g"), value));
+                result = result.replace(new RegExp(replace.match, "g"), (match) => match.replace(new RegExp(replace.replace, "g"), value));
             else
                 result = result.replace(replace.replace, value);
         }
@@ -247,7 +241,7 @@ export class Project {
         const background: string[] = [];
         switch (template.background) {
             case "css":
-                if (this.background.length != 0) {
+                if (this.background.length !== 0) {
                     const backgroundPosition: string[] = ["0"];
                     let height = 0;
                     for (const item of this.background) {
@@ -265,14 +259,11 @@ background-image: ${background.join(", ")};
 background-position-y: ${backgroundPosition.join(", ")};
 height: ${height + "px"};
 `);
-                }
-                else {
+                } else {
                     result = result.replace(template.backgroundReplace, "");
                 }
                 break;
         }
-        // for (const item of this.background)
-        //     background.push(`<img src="${item}">`);
 
         if (template.contentReplace)
             result = result.replace(template.contentReplace, this.content);
@@ -286,13 +277,23 @@ height: ${height + "px"};
             switch (template.htmlType) {
                 case "ejs":
                     result = ejs.render(result, undefined, {
-                        filename: template.htmlPath
+                        filename: template.htmlPath,
                     });
                     break;
             }
         }
 
         return result;
+    }
+
+    @action
+    private addBackgroundsCore(items: ProjectBackground[]) {
+        this.background.push(...items);
+    }
+
+    private async initializeBackground(...files: string[]) {
+        await this.addBackgroundAsync(...files.map((item) => path.resolve(this.filename, item)));
+        this.dirty = false;
     }
 }
 
