@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import bind from "bind-decorator";
+import * as classNames from "classnames";
 
 import { autorun, observable, observer } from "../object-proxy";
 
@@ -9,6 +10,7 @@ import "./text-area.less";
 export interface TextAreaProps {
     placeholder?: string;
     value?: string;
+    invalid?: boolean;
     onChange(value: string): void;
 }
 
@@ -34,7 +36,8 @@ export class TextArea extends React.Component<TextAreaProps, void> {
 
         return (
             <div className="wrapper">
-                <textarea onInput={(e) => this.props.onChange(e.currentTarget.value)}
+                <textarea className={classNames({ invalid: this.props.invalid })}
+                    onInput={(e) => this.props.onChange(e.currentTarget.value)}
                     style={{ height: this.height + "px" }}
                     placeholder={this.props.placeholder}
                     defaultValue={this.props.value}

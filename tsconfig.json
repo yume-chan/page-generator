@@ -16,7 +16,7 @@
         ],
         "paths": {
             "*": [
-                "../typing/*"
+                "./typing/*"
             ]
         },
         "plugins": [

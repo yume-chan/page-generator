@@ -38,6 +38,9 @@ export class Welcome extends React.Component<WelcomeProps, void> {
     @observable
     private template: Template;
 
+    @observable
+    private nameError: boolean = false;
+
     constructor() {
         super();
 
@@ -62,7 +65,7 @@ export class Welcome extends React.Component<WelcomeProps, void> {
             <Panel title="New" actions={actions} style={this.props.style}>
                 <div style={{ padding: "0 8px 8px 16px" }}>
                     <h4>Project name</h4>
-                    <TextArea onChange={(value) => this.name = value} value={this.name} />
+                    <TextArea onChange={this.onNameChange} value={this.name} invalid={this.nameError} />
                 </div>
 
                 {this.templates && this.templates.map((category) => (
@@ -104,8 +107,17 @@ export class Welcome extends React.Component<WelcomeProps, void> {
     }
 
     @bind
+    private onNameChange(value: string) {
+        this.name = value;
+        this.nameError = this.name === "";
+    }
+
+    @bind
     private onCreate() {
-        this.props.onOpen(new Project(this.name, this.template));
+        if (this.name === undefined || this.name === "")
+            this.nameError = true;
+        else if (this.template !== undefined)
+            this.props.onOpen(new Project(this.name, this.template));
     }
 
     @bind

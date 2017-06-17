@@ -14,6 +14,8 @@ import "./app.less";
 
 @observer
 export class App extends React.Component<{}, void> {
+    public static modified = true;
+
     @observable
     private preview: Project | undefined;
     @observable

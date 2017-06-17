@@ -1,19 +1,20 @@
 import * as React from "react";
-import * as classNames from "classnames";
 
 import bind from "bind-decorator";
+import * as classNames from "classnames";
 
 import { observable, observer } from "../object-proxy";
 
 import { PanelAction } from "./panel";
+
 import "./expendable.less";
 
 export interface ExpendableProps {
+    actions?: PanelAction[];
     title: string;
     defaultExpended: boolean;
-    onExpendedChanged?(expended: boolean): void;
     padding?: string;
-    actions?: PanelAction[];
+    onExpendedChanged?(expended: boolean): void;
 }
 
 @observer
@@ -27,26 +28,18 @@ export class Expendable extends React.Component<ExpendableProps, void> {
         this.expended = props.defaultExpended;
     }
 
-    @bind
-    private onHeaderClick(e: React.MouseEvent<HTMLDivElement>) {
-        this.expended = !this.expended;
-
-        if (this.props.onExpendedChanged !== undefined)
-            this.props.onExpendedChanged(this.expended);
-    }
-
-    render() {
+    public render() {
         function renderActions(props: ExpendableProps) {
-            if (props.actions === undefined || props.actions.length == 0)
+            if (props.actions === undefined || props.actions.length === 0)
                 return undefined;
 
             return (
                 <div className="actions">
-                    {props.actions.map(value => (
+                    {props.actions.map((value) => (
                         <div key={value.className}
                             className={classNames("action", value.className)}
                             title={value.title}
-                            onClick={e => { e.stopPropagation(); value.onClick() }}>{value.content}</div>
+                            onClick={(e) => { e.stopPropagation(); value.onClick(); }}>{value.content}</div>
                     ))}
                 </div>
             );
@@ -54,7 +47,7 @@ export class Expendable extends React.Component<ExpendableProps, void> {
 
         return (
             <div className="expendable">
-                <header className={classNames({ "collapsed": !this.expended })}
+                <header className={classNames({ collapsed: !this.expended })}
                     onClick={this.onHeaderClick}>
                     <div className="title">{this.props.title}</div>
                     {renderActions(this.props)}
@@ -68,5 +61,13 @@ export class Expendable extends React.Component<ExpendableProps, void> {
 
             </div>
         );
+    }
+
+    @bind
+    private onHeaderClick(e: React.MouseEvent<HTMLDivElement>) {
+        this.expended = !this.expended;
+
+        if (this.props.onExpendedChanged !== undefined)
+            this.props.onExpendedChanged(this.expended);
     }
 }
