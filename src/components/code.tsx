@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { bind } from "bind-decorator";
 
+import { enableEmmet } from "../monaco-emmet";
 import { observable } from "../object-proxy";
 import { ProjectProps } from "./project";
 
@@ -71,16 +72,16 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
         }
 
         amdRequire(["vs/editor/editor.main"], () => {
-            const editor = monaco.editor.create(ref, {
+            this.editor = monaco.editor.create(ref, {
                 language: "html",
                 theme: "vs-dark",
                 value: this.props.project.content,
             });
-            editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent2) => {
-                this.value = editor.getValue();
+            this.editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent2) => {
+                this.value = this.editor!.getValue();
                 this.props.project.content = this.value;
             });
-            this.editor = editor;
+            enableEmmet(this.editor);
         });
     }
 }

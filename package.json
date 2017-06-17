@@ -41,6 +41,10 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
+    "@emmetio/css-parser": "^0.3.0",
+    "@emmetio/expand-abbreviation": "^0.5.7",
+    "@emmetio/extract-abbreviation": "^0.1.2",
+    "@emmetio/html-matcher": "^0.3.2",
     "bind-decorator": "^1.0.10",
     "classnames": "^2.2.5",
     "ejs": "^2.5.6",

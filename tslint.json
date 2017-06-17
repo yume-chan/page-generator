@@ -20,6 +20,7 @@
         "no-console": false,
         "space-before-function-paren": false,
         "array-type": false,
+        "forin": false,
         "eslint-curly": true
     }
 }
