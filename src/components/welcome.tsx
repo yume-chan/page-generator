@@ -7,7 +7,8 @@ import * as classNames from "classnames";
 
 import { autorun, observable, observer } from "../object-proxy";
 
-import { showOpenDialog } from "../dialog";
+import { quit, showOpenDialog } from "../dialog";
+
 import { Expendable } from "./expendable";
 import { Panel, PanelAction } from "./panel";
 import { Project, ProjectFile, Template, TemplateCategory } from "./project";
@@ -80,30 +81,44 @@ export class Welcome extends React.Component<WelcomeProps, void> {
     }
 
     private async loadTemplatesAsync() {
-        this.templates.push(... await Template.loadAsync("./templates/"));
+        let folder: string | null = localStorage.getItem("template.folder");
+        if (folder === null) {
+            if (process.platform === "darwin") {
+                const files = await showOpenDialog({
+                    properties: ["openDirectory"],
+                    title: "Select Template Folder",
+                });
+                if (files === undefined)
+                    return quit();
+                folder = files[0];
+            } else {
+                folder = "templates";
+            }
+            localStorage.setItem("template.folder", folder);
+        }
+        this.templates.push(... await Template.loadAsync(folder));
     }
 
     @bind
-    private onOpen() {
-        showOpenDialog({
+    private async onOpen() {
+        const files = await showOpenDialog({
             filters: [{
                 extensions: ["json"],
                 name: "Project File",
             }],
-        }, async (files) => {
-            if (files !== undefined) {
-                const content = await fs.readFile(files[0], "utf-8");
-                const file = JSON.parse(content) as ProjectFile;
-
-                const [categoryName, name] = file.template.split("/");
-                const category = this.templates.find((x) => x.name === categoryName);
-                if (category !== undefined) {
-                    const template = category.templates.find((x) => x.name === name);
-                    if (template !== undefined)
-                        this.props.onOpen(new Project(file.name, template, files[0], file));
-                }
-            }
         });
+        if (files !== undefined) {
+            const content = await fs.readFile(files[0], "utf-8");
+            const file = JSON.parse(content) as ProjectFile;
+
+            const [categoryName, name] = file.template.split("/");
+            const category = this.templates.find((x) => x.name === categoryName);
+            if (category !== undefined) {
+                const template = category.templates.find((x) => x.name === name);
+                if (template !== undefined)
+                    this.props.onOpen(new Project(file.name, template, files[0], file));
+            }
+        }
     }
 
     @bind

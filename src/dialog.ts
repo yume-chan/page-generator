@@ -1,11 +1,25 @@
 import * as electron from "electron";
-import { remote } from "electron";
-const { dialog } = remote;
 
-export function showOpenDialog(options: Electron.OpenDialogOptions, callback?: (filePaths?: string[]) => void): string[] | undefined {
-    return dialog.showOpenDialog(remote.getCurrentWindow(), options, callback);
+const app = electron.app || electron.remote.app;
+const dialog = electron.dialog || electron.remote.dialog;
+const remote = electron.remote;
+
+export function showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined> {
+    return new Promise<string[] | undefined>((resolve) => {
+        dialog.showOpenDialog(remote.getCurrentWindow(), options, (files) => {
+            resolve(files);
+        });
+    });
 }
 
-export function showSaveDialog(options: Electron.SaveDialogOptions, callback?: (file?: string) => void): string | undefined {
-    return dialog.showSaveDialog(remote.getCurrentWindow(), options, callback);
+export function showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined> {
+    return new Promise<string | undefined>((resolve) => {
+        dialog.showSaveDialog(remote.getCurrentWindow(), options, (file) => {
+            resolve(file);
+        });
+    });
+}
+
+export function quit() {
+    app.quit();
 }

@@ -8,6 +8,8 @@ import { bind } from "bind-decorator";
 
 import { enableEmmet } from "../monaco-emmet";
 import { observable } from "../object-proxy";
+
+import { DockPanel } from "./dock-panel";
 import { ProjectProps } from "./project";
 
 interface CodeProps {
@@ -73,7 +75,7 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
 
         amdRequire(["vs/editor/editor.main"], () => {
             this.editor = monaco.editor.create(ref, {
-                language: "html",
+                language: "handlebars",
                 theme: "vs-dark",
                 value: this.props.project.content,
             });

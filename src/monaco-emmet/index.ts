@@ -8,5 +8,5 @@ export function enableEmmet(editor: monaco.editor.IStandaloneCodeEditor): monaco
         expandAbbreviation(editor);
     }, "");
 
-    return monaco.languages.registerCompletionItemProvider("html", new EmmetCompletionItemProvider());
+    return monaco.languages.registerCompletionItemProvider("handlebars", new EmmetCompletionItemProvider());
 }

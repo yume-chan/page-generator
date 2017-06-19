@@ -128,14 +128,12 @@ export class Preview extends React.Component<PreviewProps, void> {
             return;
 
         if (project.filename === undefined) {
-            showSaveDialog({
+            const file = await showSaveDialog({
                 defaultPath: project.name + ".json",
-            }, async (filename) => {
-                if (filename === undefined)
-                    return;
-
-                await project.saveAsync(filename);
             });
+
+            if (file !== undefined)
+                await project.saveAsync(file);
         } else {
             await project.saveAsync(project.filename);
         }

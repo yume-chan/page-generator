@@ -3,8 +3,13 @@
 /* tslint:enable:no-reference */
 /// <reference types="monaco-editor" />
 
+import parseStylesheet from "@emmetio/css-parser";
 import { createSnippetsRegistry, expand } from "@emmetio/expand-abbreviation";
-import { extractAbbreviation, getProfile, getSyntax, isStyleSheet } from "./util";
+import parse, { HtmlNode } from "@emmetio/html-matcher";
+import Node from "@emmetio/node";
+
+import { DocumentStreamReader } from "./document-stream-reader";
+import { extractAbbreviation, getNode, getProfile, getSyntax, isStyleSheet } from "./util";
 
 const field = (index: number, placeholder: string) => `\${${index}${placeholder ? ":" + placeholder : ""}}`;
 const snippetCompletionsCache = new Map<string, monaco.languages.CompletionItem[]>();
@@ -14,9 +19,18 @@ export class EmmetCompletionItemProvider implements monaco.languages.CompletionI
 
     public provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): monaco.Thenable<monaco.languages.CompletionList> {
         let completionItems: monaco.languages.CompletionItem[] = [];
-        const syntax = getSyntax(model);
+        let syntax = getSyntax(model);
         const currentWord = getCurrentWord(model, position);
-        const expandedAbbr = this.getExpandedAbbreviation(model, position);
+
+        const parseContent = isStyleSheet(syntax) ? parseStylesheet : parse;
+        const rootNode = parseContent<monaco.Position>(new DocumentStreamReader(model));
+        const currentNode = getNode(rootNode, position);
+
+        // Inside <style> tag, trigger css abbreviations
+        if (!isStyleSheet(syntax) && currentNode && currentNode.name === "style")
+            syntax = "css";
+
+        const expandedAbbr = this.getExpandedAbbreviation(model, position, syntax, currentNode);
 
         if (!isStyleSheet(syntax)) {
             if (expandedAbbr) {
@@ -33,12 +47,14 @@ export class EmmetCompletionItemProvider implements monaco.languages.CompletionI
         return Promise.resolve({ items: completionItems, isIncomplete: true });
     }
 
-    private getExpandedAbbreviation(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.CompletionItem | undefined {
+    private getExpandedAbbreviation(model: monaco.editor.IReadOnlyModel, position: monaco.Position, syntax: string, currentNode: Node<monaco.Position> | null): monaco.languages.CompletionItem | undefined {
         const [rangeToReplace, wordToExpand] = extractAbbreviation(model, position);
         if (!rangeToReplace || !wordToExpand)
             return;
 
-        const syntax = getSyntax(model);
+        if (!isValidLocationForEmmetAbbreviation(currentNode, syntax, position))
+            return;
+
         const expandedWord = expand(wordToExpand, {
             addons: syntax === "jsx" ? { jsx: true } : undefined,
             field,
@@ -98,4 +114,14 @@ function getCurrentWord(model: monaco.editor.IReadOnlyModel, position: monaco.Po
 
 function removeTabStops(expandedWord: string): string {
     return expandedWord.replace(/\$\{\d+\}/g, "").replace(/\$\{\d+:([^\}]+)\}/g, "$1");
+}
+
+function isValidLocationForEmmetAbbreviation(currentNode: Node<monaco.Position> | null, syntax: string, position: monaco.Position): boolean {
+    if (!currentNode)
+        return true;
+
+    if (isStyleSheet(syntax))
+        return (currentNode as any).type !== "rule";
+
+    return !position.isBeforeOrEqual((currentNode as HtmlNode<monaco.Position>).open.end);
 }

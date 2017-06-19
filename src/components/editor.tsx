@@ -25,8 +25,8 @@ export class Editor extends React.Component<EditorProps, void> {
         const actions: PanelAction[] = [
             {
                 className: "icon-new",
-                onClick: () => {
-                    showOpenDialog({
+                onClick: async () => {
+                    const files = await showOpenDialog({
                         filters: [
                             {
                                 extensions: ["png", "jpg"],
@@ -34,12 +34,10 @@ export class Editor extends React.Component<EditorProps, void> {
                             },
                         ],
                         properties: ["openFile", "multiSelections"],
-                    }, async (files) => {
-                        if (files === undefined)
-                            return;
-
-                        await this.props.project.addBackgroundAsync(...files);
                     });
+
+                    if (files !== undefined)
+                        await this.props.project.addBackgroundAsync(...files);
                 },
             },
         ];
