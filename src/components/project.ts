@@ -11,6 +11,7 @@ export interface TemplateReplace {
     readonly default: string;
     readonly match?: string;
     readonly buildOnly?: boolean;
+    readonly hidden?: boolean;
 }
 
 export interface Template {

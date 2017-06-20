@@ -9,7 +9,7 @@ import { IStandaloneCodeEditorToTextEditor } from "./textEditorAdapter";
 
 export function enableEmmet(editor: monaco.editor.IStandaloneCodeEditor): monaco.IDisposable {
     editor.addCommand(monaco.KeyCode.Tab, () => {
-        vscode.window.activeTextEditor = IStandaloneCodeEditorToTextEditor(editor);;
+        vscode.window.activeTextEditor = IStandaloneCodeEditorToTextEditor(editor);
         expandAbbreviation();
     }, "");
 

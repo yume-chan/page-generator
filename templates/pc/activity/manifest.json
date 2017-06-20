@@ -21,12 +21,14 @@
             "replace": "\\./",
             "default": "../",
             "match": "<%.*?%>",
-            "buildOnly": true
+            "buildOnly": true,
+            "hidden": true
         },
         "fake user": {
             "replace": "<% var user = {}; %>",
             "default": "",
-            "buildOnly": true
+            "buildOnly": true,
+            "hidden": true
         }
     },
     "contentReplace": "{{CONTENT}}",

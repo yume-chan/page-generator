@@ -20,6 +20,7 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
     @observable
     private value: string;
     private editor: monaco.editor.IStandaloneCodeEditor | undefined;
+    private disposable: monaco.IDisposable | undefined;
 
     constructor(props: CodeProps & ProjectProps) {
         super(props);
@@ -70,6 +71,11 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
                 this.editor.dispose();
                 this.editor = undefined;
             }
+
+            if (this.disposable !== undefined) {
+                this.disposable.dispose();
+                this.disposable = undefined;
+            }
             return;
         }
 
@@ -83,7 +89,7 @@ export class Code extends React.Component<CodeProps & ProjectProps, void> {
                 this.value = this.editor!.getValue();
                 this.props.project.content = this.value;
             });
-            enableEmmet(this.editor);
+            this.disposable = enableEmmet(this.editor);
         });
     }
 }
