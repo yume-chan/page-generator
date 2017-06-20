@@ -1,12 +1,17 @@
 /// <reference types="monaco-editor" />
 
-import { expandAbbreviation } from "./abbreviation-actions";
-import { EmmetCompletionItemProvider } from "./emmet-completion-item-provider";
+import * as vscode from "./vscode";
+
+import { expandAbbreviation } from "./abbreviationActions";
+import { VscodeCompletionItemProviderToMonacoCompletionItemProvider } from "./completionItemProviderAdapter";
+import { EmmetCompletionItemProvider } from "./emmetCompletionProvider";
+import { IStandaloneCodeEditorToTextEditor } from "./textEditorAdapter";
 
 export function enableEmmet(editor: monaco.editor.IStandaloneCodeEditor): monaco.IDisposable {
     editor.addCommand(monaco.KeyCode.Tab, () => {
-        expandAbbreviation(editor);
+        vscode.window.activeTextEditor = IStandaloneCodeEditorToTextEditor(editor);;
+        expandAbbreviation();
     }, "");
 
-    return monaco.languages.registerCompletionItemProvider("handlebars", new EmmetCompletionItemProvider());
+    return monaco.languages.registerCompletionItemProvider("handlebars", VscodeCompletionItemProviderToMonacoCompletionItemProvider(new EmmetCompletionItemProvider(), ["!", ".", "}"]));
 }

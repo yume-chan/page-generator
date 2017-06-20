@@ -1,16 +1,17 @@
-/// <reference types="monaco-editor" />
+import * as vscode from "./vscode";
 
 import extract from "@emmetio/extract-abbreviation";
+import { HtmlNode } from "@emmetio/html-matcher";
 import Node from "@emmetio/node";
 
-export function getSyntax(model: monaco.editor.IReadOnlyModel): string {
-    if (model.getModeId() === "jade")
+export function getSyntax(document: vscode.TextDocument): string {
+    if (document.languageId === "jade")
         return "pug";
 
-    if (model.getModeId() === "javascriptreact" || model.getModeId() === "typescriptreact")
+    if (document.languageId === "javascriptreact" || document.languageId === "typescriptreact")
         return "jsx";
 
-    return model.getModeId();
+    return document.languageId;
 }
 
 export function isStyleSheet(syntax: string): syntax is "css" | "scss" | "sass" | "less" | "stylus" {
@@ -34,15 +35,15 @@ export function extractAbbreviation(model: monaco.editor.IReadOnlyModel, positio
     return [rangeToReplace, result.abbreviation];
 }
 
-export function getNode(root: Node<monaco.Position>, position: monaco.Position, includeNodeBoundary: boolean = false) {
-    let currentNode: Node<monaco.Position> | null | undefined = root.firstChild;
-    let foundNode: Node<monaco.Position> | null = null;
+export function getNode(root: Node<vscode.Position>, position: vscode.Position, includeNodeBoundary: boolean = false) {
+    let currentNode: Node<vscode.Position> | undefined | null = root.firstChild;
+    let foundNode: Node<vscode.Position> | undefined;
 
-    while (currentNode !== null && currentNode !== undefined) {
-        const nodeStart: monaco.Position = currentNode.start;
-        const nodeEnd: monaco.Position = currentNode.end;
-        if ((nodeStart.isBefore(position) && !nodeEnd.isBeforeOrEqual(position))
-            || (includeNodeBoundary && (nodeStart.isBeforeOrEqual(position) && !nodeEnd.isBefore(position)))) {
+    while (currentNode) {
+        const nodeStart: vscode.Position = currentNode.start;
+        const nodeEnd: vscode.Position = currentNode.end;
+        if ((nodeStart.isBefore(position) && nodeEnd.isAfter(position))
+            || (includeNodeBoundary && (nodeStart.isBeforeOrEqual(position) && nodeEnd.isAfterOrEqual(position)))) {
 
             foundNode = currentNode;
             // Dig deeper
@@ -53,4 +54,11 @@ export function getNode(root: Node<monaco.Position>, position: monaco.Position, 
     }
 
     return foundNode;
+}
+
+export function getInnerRange(currentNode: HtmlNode<vscode.Position>): vscode.Range | undefined {
+    if (!currentNode.close)
+        return undefined;
+
+    return new vscode.Range(currentNode.open.end, currentNode.close.start);
 }

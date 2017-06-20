@@ -194,6 +194,9 @@ declare module "@emmetio/html-matcher" {
             };
             start: TPosition;
             end: TPosition;
+        };
+        selectorToken: {
+            end: TPosition;
         }
     }
 
