@@ -1,7 +1,7 @@
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
-import * as classNames from "classnames";
+import classNames from "classnames";
 
 import { observable, observer } from "../object-proxy";
 
@@ -18,7 +18,7 @@ export interface ExpendableProps {
 }
 
 @observer
-export class Expendable extends React.Component<ExpendableProps, void> {
+export class Expendable extends React.Component<ExpendableProps> {
     @observable
     private expended: boolean;
 

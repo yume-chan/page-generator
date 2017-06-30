@@ -1,7 +1,7 @@
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
-import * as classNames from "classnames";
+import classNames from "classnames";
 
 import { autorun, observable, observer } from "../object-proxy";
 
@@ -15,7 +15,7 @@ export interface TextAreaProps {
 }
 
 @observer
-export class TextArea extends React.Component<TextAreaProps, void> {
+export class TextArea extends React.Component<TextAreaProps> {
     private mirror: HTMLDivElement | undefined | null;
 
     @observable

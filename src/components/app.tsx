@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
 
@@ -13,7 +13,7 @@ import { Welcome } from "./welcome";
 import "./app.less";
 
 @observer
-export class App extends React.Component<{}, void> {
+export class App extends React.Component {
     public static modified = true;
 
     @observable

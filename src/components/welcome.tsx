@@ -1,9 +1,9 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
-import * as classNames from "classnames";
+import classNames from "classnames";
 
 import { autorun, observable, observer } from "../object-proxy";
 
@@ -29,7 +29,7 @@ export interface WelcomeProps {
 }
 
 @observer
-export class Welcome extends React.Component<WelcomeProps, void> {
+export class Welcome extends React.Component<WelcomeProps> {
     @observable.array
     private templates: TemplateCategory[] = [];
 

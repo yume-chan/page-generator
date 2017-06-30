@@ -1,6 +1,6 @@
-import * as path from "path";
+import path from "path";
 
-import * as React from "react";
+import React from "react";
 import { SortableContainer, SortableElement } from "react-sortable-hoc";
 
 import { observer } from "../object-proxy";

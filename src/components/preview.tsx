@@ -1,7 +1,7 @@
-import * as path from "path";
+import path from "path";
 
-import * as React from "react";
-import * as webview from "webview";
+import React from "react";
+import webview from "webview";
 
 import bind from "bind-decorator";
 
@@ -22,7 +22,7 @@ export interface PreviewProps {
 }
 
 @observer
-export class Preview extends React.Component<PreviewProps, void> {
+export class Preview extends React.Component<PreviewProps> {
     @observable
     private project: Project;
 

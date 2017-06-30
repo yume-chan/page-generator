@@ -1,4 +1,4 @@
-import * as electron from "electron";
+import electron from "electron";
 
 const app = electron.app || electron.remote.app;
 const dialog = electron.dialog || electron.remote.dialog;

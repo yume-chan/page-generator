@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
 
@@ -15,7 +15,7 @@ export interface SeparatorProps {
 }
 
 @observer
-export class Separator extends React.Component<SeparatorProps, void> {
+export class Separator extends React.Component<SeparatorProps> {
     private start: number = 0;
     private origin: number = 0;
 

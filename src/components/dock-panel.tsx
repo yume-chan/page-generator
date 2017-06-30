@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
 
@@ -27,7 +27,7 @@ export interface DockPanelProps {
 }
 
 @observer
-export class DockPanel extends React.Component<DockPanelProps, void> {
+export class DockPanel extends React.Component<DockPanelProps> {
     @observable
     private startPanelSize: number;
     @observable

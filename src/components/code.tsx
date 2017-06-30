@@ -2,7 +2,7 @@
 
 declare const amdRequire: any;
 
-import * as React from "react";
+import React from "react";
 
 import { bind } from "bind-decorator";
 
@@ -16,7 +16,7 @@ interface CodeProps {
     style?: React.CSSProperties;
 }
 
-export class Code extends React.Component<CodeProps & ProjectProps, void> {
+export class Code extends React.Component<CodeProps & ProjectProps> {
     @observable
     private value: string;
     private editor: monaco.editor.IStandaloneCodeEditor | undefined;

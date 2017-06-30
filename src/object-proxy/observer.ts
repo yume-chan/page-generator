@@ -1,9 +1,7 @@
-import * as React from "react";
+import React from "react";
 
 import { FunctionRef } from "./action";
 import { run } from "./autorun";
-
-export type ReactProps<P> = P & { children?: React.ReactNode };
 
 export function hasOwnProperty(object: object, property: string) {
     return Object.prototype.hasOwnProperty.call(object, property);
@@ -36,7 +34,7 @@ export function observer<P, T extends React.ComponentClass<P>>(target: T | React
 
         return target as T;
     } else {
-        return observer(class extends React.Component<P, void> {
+        return observer(class extends React.Component<P> {
             public shouldComponentUpdate(nextProps: P): boolean {
                 return this.props !== nextProps;
             }

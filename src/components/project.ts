@@ -1,8 +1,8 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 
-import * as ejs from "ejs";
-import * as sizeOf from "image-size";
+import ejs from "ejs";
+import sizeOf from "image-size";
 
 import { action, observable } from "../object-proxy";
 
@@ -52,7 +52,7 @@ export const Template = {
                 for (const templateName of await fs.readdir(categoryPath)) {
                     const templatePath = path.resolve(categoryPath, templateName);
                     if ((await fs.stat(templatePath)).isDirectory()) {
-                        const template = await fs.readJson(path.resolve(templatePath, "manifest.json"), "utf-8") as Template;
+                        const template = await fs.readJson(path.resolve(templatePath, "manifest.json")) as Template;
                         // Temporarily breaks readonly contract
                         (template as any).category = categoryName;
                         (template as any).name = templateName;

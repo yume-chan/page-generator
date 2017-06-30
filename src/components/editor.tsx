@@ -1,10 +1,10 @@
-import * as path from "path";
+import path from "path";
 
-import * as React from "react";
+import React from "react";
 
 import bind from "bind-decorator";
 
-import { observable, observer, ReactProps } from "../object-proxy";
+import { observable, observer } from "../object-proxy";
 
 import { showOpenDialog } from "../dialog";
 import { BackgroundList } from "./background-list";
@@ -20,7 +20,7 @@ export interface EditorProps {
 }
 
 @observer
-export class Editor extends React.Component<EditorProps, void> {
+export class Editor extends React.Component<EditorProps> {
     public render() {
         const actions: PanelAction[] = [
             {
@@ -42,14 +42,14 @@ export class Editor extends React.Component<EditorProps, void> {
             },
         ];
 
-        const ReplaceInput = observer(({ name, replaces }: ReactProps<{ name: string, replaces: { [key: string]: string } }>) => (
+        const ReplaceInput = observer(({ name, replaces }: { name: string, replaces: { [key: string]: string } }) => (
             <div>
                 <h4>{name}</h4>
                 <TextArea onChange={(value) => this.props.onReplaceChange(name, value)} value={replaces[name]} />
             </div>
         ));
 
-        const Replaces = observer(({ replaces, template }: ReactProps<{ replaces: { [key: string]: string }, template: { readonly [key: string]: TemplateReplace } }>) => {
+        const Replaces = observer(({ replaces, template }: { replaces: { [key: string]: string }, template: { readonly [key: string]: TemplateReplace } }) => {
 
             const children: JSX.Element[] = [];
             for (const key of Object.keys(replaces))
