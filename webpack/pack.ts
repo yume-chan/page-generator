@@ -28,7 +28,7 @@ webpack([renderer, main], (err: any, stats) => {
         return;
     }
 
-    const packConfig: any = {
+    const packConfig = {
         dir: "./out",
         out: "./bin",
         overwrite: true,

@@ -1,9 +1,9 @@
+import path from "path";
+import url from "url";
+
 import electron from "electron";
 import { app, BrowserWindow, Menu, MenuItem } from "electron";
 import windowStateKeeper from "electron-window-state";
-
-import path from "path";
-import url from "url";
 
 /*
  * Keep a global reference of the window object, if you don"t, the window will

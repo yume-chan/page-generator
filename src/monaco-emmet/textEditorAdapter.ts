@@ -571,10 +571,10 @@ export class ExtHostTextEditor implements vscode.TextEditor {
             }
         }
 
-        const snippetController = this._proxy.getContribution("editor.contrib.snippetController") as any;
+        const snippetController = this._proxy.getContribution("snippetController2") as any;
         // insertSnippet(template: string, overwriteBefore: number, overwriteAfter: number): void
         const selection = this._proxy.getSelection();
-        snippetController.insertSnippet(snippet.value, selection.startColumn - ranges[0].startColumn, ranges[0].endColumn - selection.endColumn);
+        snippetController.insert(snippet.value, selection.startColumn - ranges[0].startColumn, ranges[0].endColumn - selection.endColumn);
         return Promise.resolve(true);
     }
 }

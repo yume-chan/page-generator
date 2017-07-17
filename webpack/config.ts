@@ -1,6 +1,6 @@
 import * as path from "path";
-import * as webpack from "webpack";
 
+import * as webpack from "webpack";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 

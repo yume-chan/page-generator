@@ -1,8 +1,8 @@
 import * as path from 'path';
 import { spawn } from 'child_process';
 
-import * as WebpackDevServer from "webpack-dev-server";
 import * as webpack from "webpack";
+import * as WebpackDevServer from "webpack-dev-server";
 
 import { main, renderer } from "./config";
 
@@ -45,7 +45,7 @@ webpack(main, (err: any, stats) => {
                 path.resolve(__dirname, "..", "node_modules", ".bin", "electron");
         if (electronPath.includes(" "))
             electronPath = `"${electronPath}"`;
-        const electron = spawn(`${electronPath}`, [path.resolve(main.output!.path, main.output!.filename), "--devTools"]);
+        const electron = spawn(electronPath, [path.resolve(main.output!.path, main.output!.filename), "--devTools"]);
         electron.on("exit", () => {
             process.exit(0);
         });

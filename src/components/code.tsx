@@ -85,7 +85,7 @@ export class Code extends React.Component<CodeProps & ProjectProps> {
                 theme: "vs-dark",
                 value: this.props.project.content,
             });
-            this.editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent2) => {
+            this.editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
                 this.value = this.editor!.getValue();
                 this.props.project.content = this.value;
             });

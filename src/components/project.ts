@@ -40,6 +40,10 @@ export const Template = {
         const result: TemplateCategory[] = [];
 
         for (const categoryName of await fs.readdir(folder)) {
+            // Some SVN client adds `.svn` folder recursively, ignore them.
+            if (categoryName.startsWith("."))
+                continue;
+
             const categoryPath = path.resolve(folder, categoryName);
             if ((await fs.stat(categoryPath)).isDirectory()) {
                 const templates: Template[] = [];
@@ -50,6 +54,10 @@ export const Template = {
                 result.push(category);
 
                 for (const templateName of await fs.readdir(categoryPath)) {
+                    // Some SVN client adds `.svn` folder recursively, ignore them.
+                    if (templateName.startsWith("."))
+                        continue;
+
                     const templatePath = path.resolve(categoryPath, templateName);
                     if ((await fs.stat(templatePath)).isDirectory()) {
                         const template = await fs.readJson(path.resolve(templatePath, "manifest.json")) as Template;
@@ -68,6 +76,9 @@ export const Template = {
                         const html = await fs.readFile(htmlPath, "utf-8");
                         (template as any).html = html;
 
+                        if (template.htmlType === undefined)
+                            (template as any).htmlType = "html";
+
                         templates.push(template);
                     }
                 }
@@ -84,8 +95,8 @@ interface ImageInfo {
     type: string;
 }
 
-async function sizeOfAsync(path: string): Promise<ImageInfo> {
-    const buffer = await fs.readFile(path);
+async function sizeOfAsync(filePath: string): Promise<ImageInfo> {
+    const buffer = await fs.readFile(filePath);
     return sizeOf(buffer);
 }
 

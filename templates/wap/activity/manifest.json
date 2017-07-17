@@ -1,0 +1,14 @@
+{
+    "uri": "http://wechat.cnaidai.com/webchat/activity/{NAME}/",
+    "uriReplace": "{NAME}",
+    "htmlName": "index.html",
+    "htmlReplace": {
+        "title": {
+            "replace": "{{TITLE}}",
+            "default": "爱贷网"
+        }
+    },
+    "contentReplace": "{{CONTENT}}",
+    "background": "css",
+    "backgroundReplace": "/*{{BACKGROUND}}*/"
+}
