@@ -9,6 +9,10 @@
         }
     },
     "contentReplace": "{{CONTENT}}",
-    "background": "css",
-    "backgroundReplace": "/*{{BACKGROUND}}*/"
+    "background": "image",
+    "backgroundReplace": "{{BACKGROUND}}",
+    "viewport": {
+        "width": 375,
+        "height": 667
+    }
 }

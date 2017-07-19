@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>{{TITLE}}</title>
+    <script src="flexible.js"></script>
     <style>
         html {
             margin: 0;
@@ -11,19 +12,36 @@
         }
 
         body {
-            /*{{BACKGROUND}}*/
-            background-position-x: center;
-            background-repeat: no-repeat;
+            position: relative;
 
             width: 7.5rem;
             margin: 0 auto;
+        }
+
+        .background {
+            font-size: 0;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        .content {
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
     </style>
 </head>
 
 <body>
-    {{CONTENT}}
+    <div class="background">
+        {{BACKGROUND}}
+    </div>
+    <div class="content">
+        {{CONTENT}}
+    </div>
 </body>
 
 </html>

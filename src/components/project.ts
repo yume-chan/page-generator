@@ -14,21 +14,30 @@ export interface TemplateReplace {
     readonly hidden?: boolean;
 }
 
-export interface Template {
-    readonly category: string;
-    readonly customScript?: string;
-    readonly name: string;
-    readonly uri: string;
-    readonly uriReplace: string;
-    readonly htmlName: string;
-    readonly htmlPath: string;
-    readonly html: string;
-    readonly htmlType: "ejs" | "html";
-    readonly htmlReplace: { readonly [key: string]: TemplateReplace };
-    readonly contentReplace: string | undefined;
-    readonly background: "css";
-    readonly backgroundReplace: string;
+export interface Viewport {
+    readonly width: number;
+    readonly height: number;
 }
+
+interface MutableTemplate {
+    category: string;
+    customScript?: string;
+    path: string;
+    name: string;
+    uri: string;
+    uriReplace: string;
+    htmlName: string;
+    htmlPath: string;
+    html: string;
+    htmlType: "ejs" | "html";
+    htmlReplace: { readonly [key: string]: TemplateReplace };
+    contentReplace: string | undefined;
+    background: "css" | "image";
+    backgroundReplace: string;
+    viewport?: Viewport;
+}
+
+export type Template = Readonly<MutableTemplate>;
 
 export interface TemplateCategory {
     name: string;
@@ -60,24 +69,25 @@ export const Template = {
 
                     const templatePath = path.resolve(categoryPath, templateName);
                     if ((await fs.stat(templatePath)).isDirectory()) {
-                        const template = await fs.readJson(path.resolve(templatePath, "manifest.json")) as Template;
-                        // Temporarily breaks readonly contract
-                        (template as any).category = categoryName;
-                        (template as any).name = templateName;
+                        const template = await fs.readJson(path.resolve(templatePath, "manifest.json")) as MutableTemplate;
+
+                        template.path = templatePath + path.sep;
+                        template.category = categoryName;
+                        template.name = templateName;
 
                         if (template.customScript !== undefined) {
                             const script = path.resolve(templatePath, template.customScript);
-                            (template as any).customScript = script;
+                            template.customScript = script;
                         }
 
                         const htmlPath = path.resolve(templatePath, template.htmlName);
-                        (template as any).htmlPath = htmlPath;
+                        template.htmlPath = htmlPath;
 
                         const html = await fs.readFile(htmlPath, "utf-8");
-                        (template as any).html = html;
+                        template.html = html;
 
                         if (template.htmlType === undefined)
-                            (template as any).htmlType = "html";
+                            template.htmlType = "html";
 
                         templates.push(template);
                     }
@@ -115,11 +125,25 @@ export interface ProjectBackground {
     height: number;
 }
 
+export function fileUrl(file: string) {
+    let pathName = path.resolve(file).replace(/\\/g, "/");
+
+    // Windows drive letter must be prefixed with a slash
+    if (pathName[0] !== "/")
+        pathName = "/" + pathName;
+
+    return encodeURI("file://" + pathName);
+}
+
 export class Project {
     public readonly name: string;
     public readonly template: Template;
     public readonly uri: string;
     public filename: string | undefined;
+
+    /**
+     * Gets the path of the generated file and its assets.
+     */
     public assetsPath: string | undefined;
 
     @observable
@@ -191,7 +215,7 @@ export class Project {
         await fs.ensureDir(dirname);
 
         // Copy assets
-        this.assetsPath = path.resolve(dirname, this.name);
+        this.assetsPath = path.resolve(dirname, this.name) + path.sep;
         await fs.ensureDir(this.assetsPath);
 
         const background: string[] = [];
@@ -225,16 +249,6 @@ export class Project {
     }
 
     public async buildAsync(preview: boolean): Promise<string> {
-        function fileUrl(file: string) {
-            let pathName = path.resolve(file).replace(/\\/g, "/");
-
-            // Windows drive letter must be prefixed with a slash
-            if (pathName[0] !== "/")
-                pathName = "/" + pathName;
-
-            return encodeURI("file://" + pathName);
-        }
-
         const template = this.template;
 
         let result = template.html;
@@ -250,10 +264,13 @@ export class Project {
                 result = result.replace(replace.replace, value);
         }
 
-        const background: string[] = [];
-        switch (template.background) {
-            case "css":
-                if (this.background.length !== 0) {
+        if (this.background.length === 0) {
+            result = result.replace(template.backgroundReplace, "");
+        } else {
+
+            const background: string[] = [];
+            switch (template.background) {
+                case "css":
                     const backgroundPosition: string[] = ["0"];
                     let height = 0;
                     for (const item of this.background) {
@@ -271,10 +288,17 @@ background-image: ${background.join(", ")};
 background-position-y: ${backgroundPosition.join(", ")};
 height: ${height + "px"};
 `);
-                } else {
-                    result = result.replace(template.backgroundReplace, "");
-                }
-                break;
+                    break;
+                case "image":
+                    for (const item of this.background) {
+                        if (preview)
+                            background.push(`<img src="${fileUrl(item.path)}">`);
+                        else
+                            background.push(`<img src="${item.relativePath}">`);
+                    }
+                    result = result.replace(template.backgroundReplace, background.join("\r\n"));
+                    break;
+            }
         }
 
         if (template.contentReplace)

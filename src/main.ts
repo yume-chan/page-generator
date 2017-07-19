@@ -12,7 +12,7 @@ import windowStateKeeper from "electron-window-state";
 let win: Electron.BrowserWindow | null;
 
 function createWindow() {
-    // BrowserWindow.addDevToolsExtension("./react-dev-tools/");
+    BrowserWindow.addDevToolsExtension("./react-dev-tools/");
 
     const mainWindowState = new windowStateKeeper();
 

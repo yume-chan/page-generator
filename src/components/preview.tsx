@@ -10,7 +10,7 @@ import { autorun, observable, observer } from "../object-proxy";
 import { showSaveDialog } from "../dialog";
 import { Code } from "./code";
 import { DockPanel } from "./dock-panel";
-import { Project } from "./project";
+import { fileUrl, Project } from "./project";
 
 import "./preview.less";
 
@@ -23,33 +23,16 @@ export interface PreviewProps {
 
 @observer
 export class Preview extends React.Component<PreviewProps> {
-    @observable
-    private project: Project;
-
-    @observable
-    private content: string;
-
     private webview: Electron.WebviewTag | undefined;
     private webviewLoaded: boolean = false;
     private devToolsOpen: boolean = false;
 
-    constructor(props: PreviewProps) {
-        super(props);
-
-        this.project = props.project;
-    }
-
-    public shouldComponentUpdate(nextProps: PreviewProps) {
-        if (this.project !== nextProps.project) {
-            this.project = nextProps.project;
-            return false;
-        }
-        return true;
-    }
-
     public render() {
         const { project, isVirtual } = this.props;
         const template = project.template;
+
+        if (this.webviewLoaded)
+            this.computeContent();
 
         const main = (
             <div className="preview" style={this.props.style}>
@@ -65,9 +48,11 @@ export class Preview extends React.Component<PreviewProps> {
                         </div>
                     )}
                 </header>
-                {this.content !== undefined}
                 <webview ref={this.onWebviewRef}
-                    src={"data:text/html; charset=utf-8," + encodeURIComponent(this.content)} />
+                    style={template.viewport && { width: template.viewport.width + "px", height: template.viewport.height + "px" }}
+                    onMouseOver={this.onWebviewMouseOver}
+                    onMouseOut={this.onWebviewMouseOut}
+                    src="about:blank" />
             </div>
         );
 
@@ -90,13 +75,18 @@ export class Preview extends React.Component<PreviewProps> {
         this.webview = e;
         this.webview.httpreferrer = this.props.project.uri;
         this.webview.disablewebsecurity = "true";
-        this.webview.addEventListener("dom-ready", () => {
-            if (this.devToolsOpen) {
-                this.webview!.openDevTools();
-                this.devToolsOpen = false;
-            }
-            this.webviewLoaded = true;
-        });
+        this.webview.addEventListener("dom-ready", this.onWebviewReady);
+    }
+
+    @bind
+    private onWebviewReady() {
+        this.webview!.removeEventListener("dom-ready", this.onWebviewReady);
+
+        if (this.devToolsOpen) {
+            this.webview!.openDevTools();
+            this.devToolsOpen = false;
+        }
+        this.webviewLoaded = true;
 
         this.computeContent();
     }
@@ -104,24 +94,67 @@ export class Preview extends React.Component<PreviewProps> {
     @autorun
     private computeContent() {
         const core = async (project: Project) => {
-            this.content = await project.buildAsync(true);
+            const content = await project.buildAsync(true);
+            const dataUri = "data:text/html; charset=utf-8," + encodeURIComponent(content);
+            this.webview!.loadURL(dataUri, { baseURLForDataURL: fileUrl(project.assetsPath || project.template.path) + "/" });
         };
 
-        core(this.project);
+        core(this.props.project);
+    }
+
+    @bind
+    private onWebviewMouseOver() {
+        setTimeout(() => {
+            const viewport = this.props.project.template.viewport;
+            if (viewport !== undefined) {
+                const webContents = this.webview!.getWebContents();
+                const deviceMetrics = { mobile: true, fitWindow: true, ...viewport, deviceScaleFactor: 2 };
+                if (webContents !== undefined) {
+                    if (webContents.isDevToolsOpened()) {
+                        webContents.devToolsWebContents.executeJavaScript("Emulation.MultitargetTouchModel.instance().setTouchEnabled(true, true)");
+                        webContents.devToolsWebContents.executeJavaScript(`SDK.targetManager.mainTarget().emulationAgent().invoke_setDeviceMetricsOverride(${JSON.stringify(deviceMetrics)})`);
+                    } else {
+                        const debugger2 = webContents.debugger;
+                        if (!debugger2.isAttached())
+                            debugger2.attach("1.2");
+                        debugger2.sendCommand("Emulation.setTouchEmulationEnabled", { enabled: true, configuration: "mobile" });
+                        debugger2.sendCommand("Emulation.setDeviceMetricsOverride", deviceMetrics);
+                    }
+                }
+            }
+        }, 0);
+    }
+
+    @bind
+    private onWebviewMouseOut() {
+        const viewport = this.props.project.template.viewport;
+        if (viewport !== undefined) {
+            const webContents = this.webview!.getWebContents();
+            if (webContents !== undefined) {
+                if (webContents.isDevToolsOpened()) {
+                    webContents.devToolsWebContents.executeJavaScript("Emulation.MultitargetTouchModel.instance().setTouchEnabled(false, false)");
+                } else {
+                    const debugger2 = webContents.debugger;
+                    if (!debugger2.isAttached())
+                        debugger2.attach("1.2");
+                    debugger2.sendCommand("Emulation.setTouchEmulationEnabled", { enabled: false });
+                }
+            }
+        }
     }
 
     @bind
     private openDevTools() {
-        if (this.webviewLoaded)
+        if (this.webviewLoaded) {
             this.webview!.openDevTools();
-        else
+            this.onWebviewMouseOver();
+        } else {
             this.devToolsOpen = true;
+        }
     }
 
     @bind
     private async save() {
-        // Make a local copy to make TypeScript happy.
-        // Or `project` will be `Project | undefined` again in async callback.
         const project = this.props.project;
 
         if (project === undefined)
