@@ -75,7 +75,7 @@ class Walker extends Lint.AbstractWalker<void> {
     analyzeNode(node: ts.Node | undefined, isThen: boolean): UndefinedAnalyzeResult | NodeAnalyzeResult;
     analyzeNode(node: ts.Node | undefined, isThen: boolean): UndefinedAnalyzeResult | NodeAnalyzeResult {
         if (node === undefined)
-            return { type: NodeType.Undefined };
+            return new UndefinedAnalyzeResult();
 
         if (ts.isBlock(node)) {
             const result = new BlockAnalyzeResult(isThen);
