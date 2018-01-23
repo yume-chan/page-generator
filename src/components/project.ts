@@ -150,7 +150,7 @@ export class Project {
     public content: string;
 
     @observable
-    public dirty: boolean;
+    public dirty: boolean = false;
 
     @observable.array
     public background: ProjectBackground[] = [];
@@ -158,17 +158,19 @@ export class Project {
     @observable.deep
     public templateReplace: { [key: string]: string };
 
+    constructor(name: string, template: Template);
+    constructor(name: string, template: Template, filename: string, file: ProjectFile);
     constructor(name: string, template: Template, filename?: string, file?: ProjectFile) {
         this.name = name;
         this.template = template;
 
         this.uri = template.uri.replace(template.uriReplace, name);
 
-        if (file !== undefined) {
+        if (typeof file !== "undefined" && typeof filename !== "undefined") {
             this.filename = filename;
 
             this.templateReplace = { ...file.templateReplace };
-            this.initializeBackground(...file.background);
+            this.initializeBackground(filename, ...file.background);
 
             this.content = file.content;
         } else {
@@ -327,8 +329,8 @@ height: ${height + "px"};
         this.background.push(...items);
     }
 
-    private async initializeBackground(...files: string[]) {
-        await this.addBackgroundAsync(...files.map((item) => path.resolve(this.filename, item)));
+    private async initializeBackground(filename: string, ...files: string[]) {
+        await this.addBackgroundAsync(...files.map((item) => path.resolve(filename, item)));
         this.dirty = false;
     }
 }

@@ -21,12 +21,8 @@ export class App extends React.Component {
     @observable
     private project: Project | undefined;
 
-    constructor() {
-        super();
-    }
-
     public render() {
-        const startPanel = this.project !== undefined ? <Editor project={this.project} onReplaceChange={this.onReplaceChange} /> : <Welcome onOpen={this.onOpen} onPreview={(project) => this.preview = project} />;
+        const startPanel = this.project !== undefined ? <Editor project={this.project} onReplaceChange={this.onReplaceChange} /> : <Welcome onOpen={this.onOpen} onPreview={(preview) => this.preview = preview} />;
 
         const project = this.project || this.preview;
         const mainElement = project !== undefined ? <Preview project={project} onClose={this.onClose} isVirtual={this.project === undefined} /> : <div />;

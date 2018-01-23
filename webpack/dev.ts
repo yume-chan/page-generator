@@ -1,5 +1,5 @@
-import * as path from 'path';
-import { spawn } from 'child_process';
+import { spawn } from "child_process";
+import * as path from "path";
 
 import * as webpack from "webpack";
 import * as WebpackDevServer from "webpack-dev-server";
@@ -17,10 +17,9 @@ webpack(main, (err: any, stats) => {
 
     const info = stats.toJson();
 
-    if (stats.hasWarnings()) {
+    if (stats.hasWarnings())
         for (const item of info.warnings)
             console.error(item);
-    }
 
     if (stats.hasErrors()) {
         for (const item of info.errors)
@@ -30,22 +29,22 @@ webpack(main, (err: any, stats) => {
     }
 
     const serverConfig: any = {
-        hot: true,
         contentBase: "out",
+        hot: true,
         stats: {
-            colors: true
+            colors: true,
         },
     };
     (renderer.entry as string[]).unshift("webpack-dev-server/client?http://localhost:3000/", "webpack/hot/dev-server");
     const server = new WebpackDevServer(webpack(renderer), serverConfig);
     server.listen(3000, () => {
         let electronPath =
-            process.platform == "win32" ?
+            process.platform === "win32" ?
                 path.resolve(__dirname, "..", "node_modules", ".bin", "electron.cmd") :
                 path.resolve(__dirname, "..", "node_modules", ".bin", "electron");
         if (electronPath.includes(" "))
             electronPath = `"${electronPath}"`;
-        const electron = spawn(electronPath, [path.resolve(main.output!.path, main.output!.filename), "--devTools"]);
+        const electron = spawn(electronPath, [path.resolve(main.output!.path!, main.output!.filename!), "--devTools"]);
         electron.on("exit", () => {
             process.exit(0);
         });

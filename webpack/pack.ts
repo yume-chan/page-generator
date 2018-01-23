@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import * as packager from "electron-packager";
 import * as webpack from "webpack";
 
-import { renderer, main } from "./config";
+import { main, renderer } from "./config";
 
 webpack([renderer, main], (err: any, stats) => {
     if (err) {
@@ -17,10 +17,9 @@ webpack([renderer, main], (err: any, stats) => {
 
     const info = stats.toJson();
 
-    if (stats.hasWarnings()) {
+    if (stats.hasWarnings())
         for (const item of info.warnings)
             console.error(item);
-    }
 
     if (stats.hasErrors()) {
         for (const item of info.errors)
@@ -33,6 +32,7 @@ webpack([renderer, main], (err: any, stats) => {
         out: "./bin",
         overwrite: true,
     };
+    // tslint:disable-next-line:no-shadowed-variable
     packager(packConfig, async (err, path) => {
         if (err) {
             console.error(err);

@@ -29,7 +29,7 @@ export class Code extends React.Component<CodeProps & ProjectProps> {
     }
 
     public componentDidMount() {
-        addEventListener("resize", this.onResize);
+        window.addEventListener("resize", this.onResize);
     }
 
     public shouldComponentUpdate(nextProps: CodeProps & ProjectProps): boolean {

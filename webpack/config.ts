@@ -1,8 +1,8 @@
 import * as path from "path";
 
-import * as webpack from "webpack";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
+import * as webpack from "webpack";
 
 const src = path.resolve(__dirname, "..", "src");
 const out = path.resolve(__dirname, "..", "out");
@@ -37,73 +37,74 @@ export const renderer: webpack.Configuration = {
                 }, {
                     loader: "awesome-typescript-loader",
                     options: {
-                        configFileName: tsconfig
-                    }
-                }]
+                        configFileName: tsconfig,
+                    },
+                }],
             },
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             {
                 enforce: "pre",
+                loader: "source-map-loader",
                 test: /\.js$/,
-                loader: "source-map-loader"
             },
 
             {
                 test: /\.less$/,
                 use: ExtractTextPlugin.extract([{
-                    loader: "css-loader", // translates CSS into CommonJS
+                    loader: "css-loader",
                     options: {
                         sourceMap: true,
-                    }
+                    },
                 }, {
-                    loader: "less-loader", // compiles Less to CSS
+                    loader: "less-loader",
                     options: {
                         noIeCompat: true,
                         sourceMap: true,
-                    }
-                }])
+                    },
+                }]),
             },
-        ]
+        ],
+    },
+
+    node: {
+        __dirname: true,
+        __filename: true,
     },
 
     target: "electron-renderer",
-    node: {
-        __filename: true,
-        __dirname: true
-    },
 
     plugins: [
         new webpack.DefinePlugin({
             "process.env": {
-                "NODE_ENV": JSON.stringify(process.env.NODE_ENV)
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV),
             },
-            "require.extensions": false
+            "require.extensions": false,
         }),
         new ExtractTextPlugin("bundle.css"),
         new webpack.NamedModulesPlugin(),
         new webpack.HotModuleReplacementPlugin(),
         new CopyWebpackPlugin([
             {
-                from: 'node_modules/monaco-editor/dev/vs',
-                to: 'vs',
+                from: "node_modules/monaco-editor/dev/vs",
+                to: "vs",
             },
             {
                 from: path.resolve(src, "index.html"),
-                to: "index.html"
+                to: "index.html",
             },
             {
                 from: path.resolve(src, "package.json"),
-                to: "package.json"
-            }
+                to: "package.json",
+            },
         ]),
     ],
 
     devServer: {
-        hot: true,
         contentBase: "out",
-        port: 3000
-    }
+        hot: true,
+        port: 3000,
+    },
 };
 
 export const main: webpack.Configuration = {
@@ -111,7 +112,7 @@ export const main: webpack.Configuration = {
 
     output: {
         filename: "main.js",
-        path: out
+        path: out,
     },
 
     // Enable sourcemaps for debugging webpack's output.
@@ -119,7 +120,7 @@ export const main: webpack.Configuration = {
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js", ".json"]
+        extensions: [".ts", ".tsx", ".js", ".json"],
     },
 
     module: {
@@ -129,20 +130,21 @@ export const main: webpack.Configuration = {
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
-        ]
+        ],
     },
 
-    target: "electron-main",
     node: {
         __dirname: false,
         __filename: false,
     },
 
+    target: "electron-main",
+
     plugins: [
         new webpack.DefinePlugin({
             "process.env": {
-                "NODE_ENV": JSON.stringify(process.env.NODE_ENV)
-            }
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+            },
         }),
     ],
 };

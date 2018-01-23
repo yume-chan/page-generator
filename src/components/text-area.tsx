@@ -19,7 +19,7 @@ export class TextArea extends React.Component<TextAreaProps> {
     private mirror: HTMLDivElement | undefined | null;
 
     @observable
-    private height: number;
+    private height: number = 0;
 
     constructor(props: TextAreaProps) {
         super(props);

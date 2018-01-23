@@ -16,39 +16,43 @@ function toCompletionItem(item: vscode.CompletionItem): monaco.languages.Complet
     };
 }
 
-export function VscodeCompletionItemProviderToMonacoCompletionItemProvider(provider: vscode.CompletionItemProvider, triggerCharacters: string[]): monaco.languages.CompletionItemProvider {
-    return {
-        triggerCharacters,
-        provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): monaco.languages.CompletionItem[] | Thenable<monaco.languages.CompletionItem[] | monaco.languages.CompletionList> | monaco.languages.CompletionList {
-            const document = IReadOnlyModelToDocument(model);
-            const list = provider.provideCompletionItems(document, TypeConverters.toPosition(position), token);
-            if (list === undefined || list === null)
+function toCompletionResult(value: vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList>): monaco.languages.CompletionItem[] | monaco.Thenable<monaco.languages.CompletionItem[]> | monaco.languages.CompletionList | monaco.Thenable<monaco.languages.CompletionList> {
+    if (typeof value === "undefined" || value === null)
+        return [];
+
+    if (value instanceof Promise) {
+        return value.then((result): monaco.languages.CompletionItem[] | monaco.languages.CompletionList => {
+            if (typeof result === "undefined" || result === null)
                 return [];
 
-            if (list instanceof Promise) {
-                return list.then((value): monaco.languages.CompletionItem[] | monaco.languages.CompletionList => {
-                    if (value === undefined || value === null)
-                        return [];
-
-                    if (value instanceof vscode.CompletionList) {
-                        return {
-                            isIncomplete: value.isIncomplete,
-                            items: value.items.map(toCompletionItem),
-                        };
-                    }
-
-                    return value.map(toCompletionItem);
-                });
-            }
-
-            if (list instanceof vscode.CompletionList) {
+            if (result instanceof vscode.CompletionList) {
                 return {
-                    isIncomplete: list.isIncomplete,
-                    items: list.items.map(toCompletionItem),
+                    isIncomplete: result.isIncomplete,
+                    items: result.items.map(toCompletionItem),
                 };
             }
 
-            return list.map(toCompletionItem);
+            return result.map(toCompletionItem);
+        }) as Promise<monaco.languages.CompletionItem[]> | Promise<monaco.languages.CompletionList>;
+    }
+
+    if (value instanceof vscode.CompletionList) {
+        return {
+            isIncomplete: value.isIncomplete,
+            items: value.items.map(toCompletionItem),
+        };
+    }
+
+    return value.map(toCompletionItem);
+}
+
+export function VscodeCompletionItemProviderToMonacoCompletionItemProvider(provider: vscode.CompletionItemProvider, triggerCharacters: string[]): monaco.languages.CompletionItemProvider {
+    return {
+        triggerCharacters,
+        provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken) {
+            const document = IReadOnlyModelToDocument(model);
+            const list = provider.provideCompletionItems(document, TypeConverters.toPosition(position), token);
+            return toCompletionResult(list);
         },
     };
 }

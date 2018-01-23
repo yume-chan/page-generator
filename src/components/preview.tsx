@@ -1,7 +1,6 @@
 import path from "path";
 
 import React from "react";
-import webview from "webview";
 
 import bind from "bind-decorator";
 
@@ -23,7 +22,7 @@ export interface PreviewProps {
 
 @observer
 export class Preview extends React.Component<PreviewProps> {
-    private webview: Electron.WebviewTag | undefined;
+    private webview: HTMLWebViewElement | undefined;
     private webviewLoaded: boolean = false;
     private devToolsOpen: boolean = false;
 
@@ -49,6 +48,8 @@ export class Preview extends React.Component<PreviewProps> {
                     )}
                 </header>
                 <webview ref={this.onWebviewRef}
+                    httpreferrer={this.props.project.uri}
+                    disablewebsecurity={true}
                     style={template.viewport && { width: template.viewport.width + "px", height: template.viewport.height + "px" }}
                     onMouseOver={this.onWebviewMouseOver}
                     onMouseOut={this.onWebviewMouseOut}
@@ -66,15 +67,13 @@ export class Preview extends React.Component<PreviewProps> {
     }
 
     @bind
-    private onWebviewRef(e: Electron.WebviewTag) {
+    private onWebviewRef(e: HTMLWebViewElement) {
         if (e === null) {
             this.webview = undefined;
             return;
         }
 
         this.webview = e;
-        this.webview.httpreferrer = this.props.project.uri;
-        this.webview.disablewebsecurity = "true";
         this.webview.addEventListener("dom-ready", this.onWebviewReady);
     }
 
@@ -83,7 +82,7 @@ export class Preview extends React.Component<PreviewProps> {
         this.webview!.removeEventListener("dom-ready", this.onWebviewReady);
 
         if (this.devToolsOpen) {
-            this.webview!.openDevTools();
+            (this.webview as any).openDevTools();
             this.devToolsOpen = false;
         }
         this.webviewLoaded = true;
@@ -96,7 +95,7 @@ export class Preview extends React.Component<PreviewProps> {
         const core = async (project: Project) => {
             const content = await project.buildAsync(true);
             const dataUri = "data:text/html; charset=utf-8," + encodeURIComponent(content);
-            this.webview!.loadURL(dataUri, { baseURLForDataURL: fileUrl(project.assetsPath || project.template.path) + "/" });
+            (this.webview as any).loadURL(dataUri, { baseURLForDataURL: fileUrl(project.assetsPath || project.template.path) + "/" });
         };
 
         core(this.props.project);
@@ -107,7 +106,7 @@ export class Preview extends React.Component<PreviewProps> {
         setTimeout(() => {
             const viewport = this.props.project.template.viewport;
             if (viewport !== undefined) {
-                const webContents = this.webview!.getWebContents();
+                const webContents = (this.webview as any).getWebContents();
                 const deviceMetrics = { mobile: true, fitWindow: true, ...viewport, deviceScaleFactor: 2 };
                 if (webContents !== undefined) {
                     if (webContents.isDevToolsOpened()) {
@@ -129,7 +128,7 @@ export class Preview extends React.Component<PreviewProps> {
     private onWebviewMouseOut() {
         const viewport = this.props.project.template.viewport;
         if (viewport !== undefined) {
-            const webContents = this.webview!.getWebContents();
+            const webContents = (this.webview as any).getWebContents();
             if (webContents !== undefined) {
                 if (webContents.isDevToolsOpened()) {
                     webContents.devToolsWebContents.executeJavaScript("Emulation.MultitargetTouchModel.instance().setTouchEnabled(false, false)");
@@ -146,7 +145,7 @@ export class Preview extends React.Component<PreviewProps> {
     @bind
     private openDevTools() {
         if (this.webviewLoaded) {
-            this.webview!.openDevTools();
+            (this.webview as any).openDevTools();
             this.onWebviewMouseOver();
         } else {
             this.devToolsOpen = true;

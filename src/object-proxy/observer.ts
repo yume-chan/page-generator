@@ -7,16 +7,16 @@ export function hasOwnProperty(object: object, property: string) {
     return Object.prototype.hasOwnProperty.call(object, property);
 }
 
-export function observer<P, T extends React.ComponentClass<P>>(target: T | React.StatelessComponent<P>): T {
+export function observer<T extends React.ComponentType<any>>(target: T): T {
     if (React.Component.isPrototypeOf(target)) {
         if (!target.prototype.shouldComponentUpdate) {
-            target.prototype.shouldComponentUpdate = function (this: React.Component<P, void>, nextProps: P): boolean {
+            target.prototype.shouldComponentUpdate = function(this: React.Component<any, void>, nextProps: any): boolean {
                 return this.props !== nextProps;
             };
         }
 
         const render: () => JSX.Element = target.prototype.render;
-        target.prototype.render = function <T>(this: React.Component<T, void>) {
+        target.prototype.render = function(this: React.Component<any, void>) {
             let forceUpdate: FunctionRef;
             if (hasOwnProperty(this, "forceUpdate")) {
                 forceUpdate = this.forceUpdate;
@@ -32,16 +32,18 @@ export function observer<P, T extends React.ComponentClass<P>>(target: T | React
             return retval;
         };
 
-        return target as T;
+        return target;
     } else {
-        return observer(class extends React.Component<P> {
-            public shouldComponentUpdate(nextProps: P): boolean {
+        class Wrapper extends React.Component<any> {
+            public shouldComponentUpdate(nextProps: any): boolean {
                 return this.props !== nextProps;
             }
 
             public render() {
-                return (target as React.StatelessComponent<P>)(this.props);
+                return (target as React.StatelessComponent<any>)(this.props);
             }
-        }) as any as T;
+        }
+
+        return observer(Wrapper) as any;
     }
 }

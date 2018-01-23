@@ -34,16 +34,16 @@ export class Welcome extends React.Component<WelcomeProps> {
     private templates: TemplateCategory[] = [];
 
     @observable
-    private name: string;
+    private name: string = "";
 
     @observable
-    private template: Template;
+    private template?: Template;
 
     @observable
     private nameError: boolean = false;
 
-    constructor() {
-        super();
+    constructor(props: WelcomeProps) {
+        super(props);
 
         this.loadTemplatesAsync();
     }
